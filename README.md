@@ -1,0 +1,2 @@
+# Description
+The Rust programming language is really coming along with respect to fullstack development. This project has one goal - investigate the feasibility of using Rust for a fullstack microservices application.
