@@ -1,0 +1,22 @@
+[package]
+name = "dx_rs"
+version = "0.1.0"
+authors = ["Oscar Aspelin <oscar.aspelin@gmail.com>"]
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+dioxus = { version = "0.7.0-rc.2", features = ["router", "fullstack"] }
+dioxus-primitives = { git = "https://github.com/DioxusLabs/components", version = "0.0.1" }
+tracing = { version = "0.1", features = ["std"] }
+serde = {version = "1.0.228", features = ['derive']}
+serde_json = {version = "1.0.145"}
+surrealdb = {version = "2.3.10", optional = true}
+
+[features]
+default = ["desktop"]
+web = ["dioxus/web"]
+desktop = ["dioxus/desktop"]
+mobile = ["dioxus/mobile"]
+server = ["dioxus/server", "dep:surrealdb"]
