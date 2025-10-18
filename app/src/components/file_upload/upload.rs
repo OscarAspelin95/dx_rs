@@ -8,6 +8,8 @@ use dioxus::prelude::*;
 use dioxus_primitives::toast::use_toast;
 use dioxus_primitives::toast::ToastOptions;
 
+use reqwest;
+
 use std::path::PathBuf;
 use std::time::Duration;
 
@@ -38,7 +40,6 @@ pub fn FileInput() -> Element {
 
     rsx! {
         div { id: "file-picker-container",
-            label { id: "upload-files-label", r#for: "file-input", "Upload files" }
             input {
                 id: "file-picker-input",
                 r#type: "file",
@@ -152,6 +153,18 @@ pub fn UploadButton() -> Element {
 
 #[component]
 pub fn UploadComponent() -> Element {
+    // We can actually fetch db stuff from here.
+    use_resource(|| async {
+        let body = reqwest::get("http://localhost:8001/create_person/1")
+            .await
+            .expect("Failed to fetch from endpoint.")
+            .text()
+            .await
+            .expect("Failed to convert response to text.");
+
+        info!("Response from db: {:?}", body);
+    });
+
     // Enable modifying our uploaded files.
     let uploaded_files = use_signal(|| Vec::<UploadedFile>::new());
 

@@ -12,3 +12,11 @@ services:
       - "8080:8080"
     depends_on:
       - db
+
+  api:
+    ports:
+      - "8001:8001"
+    build:
+      context: "./api"
+    depends_on:
+      - db

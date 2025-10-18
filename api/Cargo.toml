@@ -1,0 +1,15 @@
+[package]
+name = "api"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+surrealdb = { version = "2.3.10" }
+axum = {version = "0.8.6"}
+serde = { version = "1.0.228", features = ["derive"] }
+anyhow = {version = "1.0.100"}
+thiserror = { version = "2.0.17" }
+tokio = {version = "*", features = ["full"]}
+simple_logger = {version = "*"}
+log = {version = "*"}
+tower-http = {version = "0.6.6", features = ["full"]}

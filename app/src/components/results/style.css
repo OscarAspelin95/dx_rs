@@ -1,105 +1,55 @@
-
-
-/* Main container wrapping all upload components */
-#upload-container{
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    height: 1000px;
-
+#test-table {
+  width: 95%;
+  border-collapse: collapse;
+  font-family: sans-serif;
+  font-size: 14px;
+  border: none; /* outer border */
+  overflow: hidden; /* rounds corners properly */
+  border: 1px solid rgb(37, 37, 37);
+  border-radius: 10px;
 }
 
-/* */
-#file-picker-container{
-    margin-bottom: 10px;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
+#test-table caption {
+  caption-side: top;
+  padding: 0.75rem;
+  font-weight: bold;
+  font-size: xx-large;
+  text-align: left;
+  color: #334155;
 }
 
-/* */
-#drag-drop-container{
-    display: flex;
-    color: rgb(68, 68, 68);
-    font-size: 20px;
-    justify-content: center;
-    align-items: center;
-    border: 2px dashed rgb(60, 60, 60);
-    border-radius: 10px;
-    min-width: 500px;
-    min-height: 200px;
-
-    &:hover{
-        background-color: rgba(33, 33, 33, 0.3);
-        border-color: oklch(0.705 0.213 47.604);
-    }
+#table-header {
+  background-color: none;
 }
 
-/* File list - chosen files */
-#file-list-container{
-    margin-top: 10px;
-    overflow-y: scroll;
-    min-height: 200px;
-    max-height: 300px;
-    min-width: 500px
+#table-header-row-item {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-weight: 600;
 }
 
-#file-list-row{
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 2px;
-    padding: 7px;
-    color: rgb(86, 86, 86);
-
-    &:hover{
-        color:rgb(145, 145, 145)
-    }
+#table-body-row-item {
+  border: 1px solid #393939;
+  padding: 0.75rem 1rem;
 }
 
-#file-list-remove-row-button{
-    font-size: small;
+#table-body-row:nth-child(even) {
+  background-color: #282828;
+
+  &:hover{
+    background-color: #334155;
+  }
+}
+
+#table-body-row:nth-child(odd) {
+  background-color: #191919;
+  &:hover{
+    background-color: #334155;
+  }
 }
 
 
-/* */
-#clear-files-button{
-    &:disabled{
-        background-color: rgb(24, 24, 24);
-        color: black;
-    }
-}
-
-
-input[type="file"]{
-    background-color: none;
-
-    /* For FireFox and similar.*/
-    &::file-selector-button{
-        background-color: rgb(28, 28, 28);
-        border: none;
-        border-radius: 7px;
-        color: white;
-        padding: 10px;
-        height: 35px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-    color: transparent;
-}
-
-
-/* */
-#upload-button{
-        background-color: rgb(28, 28, 28);
-        color:rgb(145, 145, 145);
-
-        &:hover{
-            background-color: oklch(0.705 0.213 47.604);
-            color:rgb(19, 19, 19);
-        }
+#table-body-row:hover {
+  background-color: #f1f5f9;
+  transition: background-color 0.2s;
 }

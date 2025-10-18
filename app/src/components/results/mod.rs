@@ -1,8 +1,5 @@
 mod main;
-pub use main::UploadMain;
+pub use main::TestResults;
 
-mod upload;
-pub use upload::UploadComponent;
-
-mod utils;
-pub use utils::AcceptFileTypes;
+mod doodle;
+pub use doodle::Table;

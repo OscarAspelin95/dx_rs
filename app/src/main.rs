@@ -1,5 +1,4 @@
 use dioxus::prelude::*;
-
 mod components;
 mod route;
 mod views;
@@ -16,7 +15,17 @@ const GOOGLE_ICONS_LINK: &str =
 // not enough so we can style additionally with CSS id attributes.
 const PRIMITIVES_CSS: Asset = asset!("/assets/styling/dx-components-theme.css");
 
+#[cfg(feature = "server")]
+async fn launch_server() {}
+
 fn main() {
+    #[cfg(feature = "server")]
+    tokio::runtime::Runtime::new()
+        .unwrap()
+        .block_on(async move {
+            launch_server().await;
+        });
+    #[cfg(not(feature = "server"))]
     dioxus::launch(App);
 }
 
