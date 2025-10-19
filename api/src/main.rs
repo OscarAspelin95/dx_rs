@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use axum::{
     Json, Router,
     extract::{Path, State},
@@ -98,12 +100,21 @@ fn app(state: ConnectionState) -> Router {
 async fn main() -> Result<(), CustomError> {
     SimpleLogger::new().init().expect("");
 
-    info!("Connecting to database.");
-    let db: Surreal<Client> = Surreal::init();
+    let db: Surreal<Client> = loop {
+        info!("Attempting to connect to ws://db:8000");
 
-    db.connect::<Ws>("ws://db:8000")
-        .await
-        .expect("Failed to connect to database");
+        match Surreal::new::<Ws>("db:8000").await {
+            Ok(db) => {
+                info!("Connected successfully!");
+                break db;
+            }
+            Err(e) => {
+                info!("Connection failed: {:?}", e);
+                info!("Retrying in 5 seconds...");
+                tokio::time::sleep(Duration::from_secs(5)).await;
+            }
+        }
+    };
 
     info!("Signing in.");
     db.signin(Root {
