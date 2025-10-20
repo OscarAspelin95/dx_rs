@@ -9,7 +9,8 @@
 #task-container{
     margin-top: 10px;
     overflow-y: auto;
-    height: 300px;
+    max-height: 300px;
+    margin-bottom: 10px;
 }
 
 #todo-header{
@@ -59,16 +60,31 @@ h1{
 
 }
 
-
 .task-name.checked{
     text-decoration: line-through;
 }
-
 
 #remove-task-button{
     display: flex;
     justify-content: center;
     align-items: center;
     font-size: medium;
-    height: 30px;
+    height: 25px;
+}
+
+#new-task-container{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+#task-input{
+    background-color: rgb(27, 27, 27);
+    margin-right: 10px;
+    border: none;
+    border-radius: 10px;
+    height: 25px;
+    padding: 5px;
+    color: azure;
 }
