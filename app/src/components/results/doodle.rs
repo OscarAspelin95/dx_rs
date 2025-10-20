@@ -11,6 +11,17 @@ struct TableProps {
 }
 
 impl TableProps {
+    fn new() -> Self {
+        Self {
+            table_caption: None,
+            table_headers: vec![],
+            table_rows: vec![],
+        }
+    }
+}
+
+impl TableProps {
+    /// Convert a polars dataframe to a more appropriate form.
     fn from_df(caption: Option<String>, df: &mut DataFrame) -> Self {
         let mut rows: Vec<Vec<String>> = Vec::new();
 
@@ -41,14 +52,23 @@ impl TableProps {
 }
 
 #[component]
-fn SortableTable(table_props: Signal<TableProps>) -> Element {
-    let sort_function = move |i: usize| async move {
-        info!("{i}");
+fn SortableTable(data: Signal<DataFrame>) -> Element {
+    let mut df = data.read().clone();
 
-        let sort_by_header = &table_props.read().table_headers[i];
+    let table_props = use_signal(|| TableProps::new());
+    // let table_props = TableProps::from_df(Some("Caption".to_string()), &mut df);
 
-        info!("{:?}", sort_by_header);
-    };
+    // let sort_function = move |i: usize| async move {
+    //     info!("{i}");
+
+    //     let column_names: Vec<String> = df
+    //         .get_column_names()
+    //         .iter()
+    //         .map(|n| n.to_string())
+    //         .collect();
+
+    //     info!("{:?}", column_names);
+    // };
 
     rsx! {
         table { id: "test-table",
@@ -66,13 +86,7 @@ fn SortableTable(table_props: Signal<TableProps>) -> Element {
                             .iter()
                             .enumerate()
                             .map(|(i, h)| rsx! {
-                                th {
-                                    id: "table-header-row-item",
-                                    onclick: move |_| async move {
-                                        sort_function(i).await;
-                                    },
-                                    "{h}"
-                                }
+                                th { id: "table-header-row-item", onclick: move |_| async move {}, "{h}" }
                             })
                     }
                 }
@@ -93,14 +107,16 @@ fn SortableTable(table_props: Signal<TableProps>) -> Element {
 
 #[component]
 pub fn Table() -> Element {
-    let mut df = df!("column_1" => vec!["bla_c1", "bli_c1"],
+    let df = df!("column_1" => vec!["bla_c1", "bli_c1"],
                             "column_2" => vec!["bla_c2", "bli_c2"],
                             "column_3" => vec!["bla_c3", "bli_c3"],)
     .expect("Failed to create dataframe");
 
-    let table_props = TableProps::from_df(Some("Caption".to_string()), &mut df);
-    let props_signal = use_signal::<TableProps>(|| table_props);
+    // let table_props = TableProps::from_df(Some("Caption".to_string()), &mut df);
+
+    let data = use_signal(|| df);
+    // let props_signal = use_signal::<TableProps>(|| table_props);
     rsx! {
-        SortableTable { table_props: props_signal }
+        SortableTable { data }
     }
 }

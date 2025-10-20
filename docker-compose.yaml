@@ -3,7 +3,7 @@ services:
     image: "surrealdb/surrealdb:latest"
     ports:
       - "8000:8000"
-    command: "start --user root --pass root"
+    command: "start --user root --pass root rocksdb:/db/surrealdb"
     volumes:
       - "./db:/db"
   dbms:
@@ -20,3 +20,5 @@ services:
       context: "./api"
     depends_on:
       - db
+    environment:
+      - SURREAL_URL=ws://db:8000
