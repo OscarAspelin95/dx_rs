@@ -1,6 +1,5 @@
 use crate::components::Button;
 use crate::components::Checkbox;
-use crate::components::Input;
 use crate::components::Separator;
 use dioxus::prelude::*;
 

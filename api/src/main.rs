@@ -18,7 +18,9 @@ mod errors;
 use errors::ApiError;
 
 mod routes;
-use routes::create_person;
+use routes::{create_person, get_tasks};
+
+use crate::routes::add_task;
 
 mod schema;
 
@@ -30,6 +32,8 @@ fn app(state: ConnectionState) -> Router {
 
     let router = Router::new()
         .route("/create_person/{:id}", get(create_person))
+        .route("/tasks", get(get_tasks))
+        .route("/add_task", get(add_task))
         .layer(cors)
         .with_state(state);
 
