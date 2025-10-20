@@ -50,6 +50,14 @@ pub fn MainNavBar() -> Element {
                     to: Route::Results {},
                     "Results"
                 }
+                NavBarSeparator {}
+                NavbarItem {
+                    id: "navbar-item",
+                    index: 4usize,
+                    value: "todo".to_string(),
+                    to: Route::ToDo {},
+                    "ToDo"
+                }
             }
             Outlet::<Route> {}
         }

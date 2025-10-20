@@ -1,5 +1,5 @@
 use crate::views::MainNavBar;
-use crate::views::{Blog, Home, Results, Upload};
+use crate::views::{Blog, Home, Results, ToDo, Upload};
 use dioxus::prelude::*;
 
 #[derive(Routable, Clone, PartialEq, Debug)]
@@ -13,4 +13,6 @@ pub enum Route {
     Upload {},
     #[route("/results")]
     Results {},
+    #[route("/todo")]
+    ToDo {},
 }

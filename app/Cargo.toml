@@ -15,8 +15,6 @@ serde_json = {version = "1.0.145"}
 surrealdb = {version = "2.3.10", optional = true}
 tokio = {version = "*", features = ["full"], optional = true}
 reqwest = {version = "0.12.24"}
-polars = {version="0.51.0", features = ["csv", "lazy"]}
-
 
 [features]
 default = ["desktop"]

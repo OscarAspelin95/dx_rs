@@ -1,0 +1,74 @@
+#todo-container{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+
+}
+
+#task-container{
+    margin-top: 10px;
+    overflow-y: auto;
+    height: 300px;
+}
+
+#todo-header{
+    color: azure;
+
+}
+
+#todo-upper{
+    width: 300px;
+}
+
+h1{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+#task-buttons{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+}
+
+#task-row{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 300px;
+    margin-bottom: 10px;
+    margin-top: 10px;
+}
+
+#task-name-checkbox{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.task-name {
+    font-size: medium;
+    margin-left: 10px;
+    text-decoration: none;
+
+}
+
+
+.task-name.checked{
+    text-decoration: line-through;
+}
+
+
+#remove-task-button{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: medium;
+    height: 30px;
+}
