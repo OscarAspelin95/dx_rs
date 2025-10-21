@@ -1,4 +1,4 @@
-.PHONY: all build start stop clean
+.PHONY: all build start stop clean clean-db
 
 all: stop clean build start
 
@@ -13,3 +13,6 @@ stop:
 
 clean:
 	docker system prune --volumes -f
+
+clean-db:
+	sudo rm -rf ./db/surrealdb/*

@@ -4,7 +4,8 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-surrealdb = { version = "2.3.10" }
+surrealdb = { version = "2.3.10"}
+uuid = {version = "1.18.1", features = ["v7"]}
 axum = {version = "0.8.6"}
 serde = { version = "1.0.228", features = ["derive"] }
 anyhow = {version = "1.0.100"}

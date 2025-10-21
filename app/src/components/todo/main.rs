@@ -2,8 +2,9 @@ use crate::components::Button;
 use crate::components::Checkbox;
 use crate::components::Separator;
 use dioxus::prelude::*;
-
+use reqwest;
 use serde::{Deserialize, Serialize};
+use serde_json;
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 enum Status {
@@ -17,21 +18,15 @@ enum Status {
 struct ToDoItem {
     name: String,
     status: Status,
-    id: usize,
+    uuid: String,
 }
 
 impl ToDoItem {
+    /// Can we run the db api query here?
     fn toggle(&mut self) {
         match self.status {
             Status::Completed => self.status = Status::Created,
             Status::Created => self.status = Status::Completed,
-        }
-    }
-    fn new() -> Self {
-        Self {
-            name: "something".into(),
-            status: Status::Created,
-            id: 1,
         }
     }
 }
@@ -42,6 +37,7 @@ pub fn ToDoTaskList() -> Element {
     let toggle_task = move |i: usize| async move {
         match tasks.get_mut(i) {
             Some(mut task) => {
+                // Otherwise, we need to do it here.
                 task.toggle();
             }
             None => {
@@ -51,7 +47,6 @@ pub fn ToDoTaskList() -> Element {
     };
 
     rsx! {
-        // List of chosen files.
         div { id: "task-container",
             {tasks.iter().enumerate().map(|(i, task)| rsx! {
                 div { id: "task-row",
@@ -100,13 +95,25 @@ pub fn NewTask() -> Element {
                 id: "",
                 onclick: move |_| {
                     if !task_name.read().is_empty() {
-                        tasks
-                            .write()
-                            .push(ToDoItem {
-                                name: task_name.read().clone(),
-                                status: Status::Created,
-                                id: 0,
-                            })
+                        let new_task = ToDoItem {
+                            name: task_name.read().clone(),
+                            status: Status::Created,
+                            uuid: "some_uuid".into(),
+                        };
+                        tasks.write().push(new_task.clone());
+                        spawn(async move {
+                            let client = reqwest::Client::new();
+                            let response = client
+                                .post("http://localhost:8001/add_task")
+                                .json(&new_task)
+                                .send()
+                                .await;
+                            match response {
+                                Ok(response) => info!("Success: {:?}", response),
+                                Err(e) => error!("Error: {:?}", e),
+                            }
+                        });
+                        task_name.write().clear();
                     }
                 },
                 "Add"
@@ -130,12 +137,43 @@ pub fn RemoveAll() -> Element {
         }
     }
 }
+
 #[component]
 pub fn ToDoList() -> Element {
-    let tasks_signal: Signal<Vec<ToDoItem>> =
-        use_signal::<Vec<ToDoItem>>(|| vec![ToDoItem::new(), ToDoItem::new()]);
-
+    // Here, we mock data. Instead, we'd like to fetch from database...
+    let mut tasks_signal: Signal<Vec<ToDoItem>> = use_signal::<Vec<ToDoItem>>(|| vec![]);
     use_context_provider(|| tasks_signal);
+
+    // We avoid db fetching on every render by use_effect with an empty dependency array.
+    use_effect(move || {
+        spawn(async move {
+            let response = reqwest::get("http://localhost:8001/tasks").await;
+
+            match response {
+                Ok(response) => {
+                    info!("Reponse OK: {:?}", response);
+
+                    match serde_json::from_slice::<Vec<ToDoItem>>(
+                        &response
+                            .bytes()
+                            .await
+                            .expect("Failed to convert reponse to bytes."),
+                    ) {
+                        Ok(tasks) => {
+                            info!("{:?}", tasks);
+                            tasks_signal.set(tasks);
+                        }
+                        Err(e) => {
+                            error!("Failed to serialize reponse bytes: {:?}", e);
+                        }
+                    }
+                }
+                Err(e) => {
+                    error!("Failed to fetch data. {:?}", e);
+                }
+            }
+        });
+    });
 
     rsx! {
         div { id: "todo-upper",

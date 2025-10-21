@@ -21,5 +21,5 @@ pub enum Status {
 pub struct ToDoItem {
     pub name: String,
     pub status: Status,
-    pub task_id: u64,
+    pub uuid: String,
 }

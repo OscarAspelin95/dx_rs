@@ -4,64 +4,17 @@ use axum::{
     http::StatusCode,
     response::IntoResponse,
 };
-use log::{error, info};
+
+use log::info;
 
 use crate::errors::ApiError;
-use crate::schema::{Person, Status, ToDoItem};
+use crate::schema::ToDoItem;
 use crate::state::ConnectionState;
-
-pub async fn create_person(
-    State(state): State<ConnectionState>,
-    Path(id): Path<i32>,
-) -> Result<impl IntoResponse, ApiError> {
-    let db = state.surrealdb;
-
-    info!("Checking db health...");
-    match db.health().await {
-        Ok(_) => info!("Db connection healthy"),
-        Err(e) => error!("{:?}", e),
-    };
-
-    // Probably move to database connection part upstream...
-    info!("Checking namespace and database...");
-    db.use_ns("SurrealDB")
-        .use_db("SurrealDB")
-        .await
-        .expect("Failed to use database.");
-
-    let p = Person {
-        first_name: "Oscar".into(),
-        last_name: "Aspelin".into(),
-        email: "oscar.aspelin@gmail.com".into(),
-    };
-
-    // Here, create("person") creates a table name called "person".
-    let person: Option<Person> = db.create("person").content(p).await?;
-
-    let person = match person {
-        Some(person) => person,
-        None => {
-            return Err(ApiError::DatabaseRecordCreateError(
-                "Failed to insert into person table".into(),
-            ));
-        }
-    };
-
-    //
-    Ok((StatusCode::OK, Json(person)))
-}
 
 pub async fn get_tasks(
     State(state): State<ConnectionState>,
 ) -> Result<impl IntoResponse, ApiError> {
     let db = state.surrealdb;
-
-    // Probably move to database connection part upstream...
-    info!("Checking namespace and database...");
-    db.use_ns("SurrealDB")
-        .use_db("SurrealDB")
-        .await
-        .expect("Failed to use database.");
 
     // We just select all tasks for now.
     let tasks: Vec<ToDoItem> = db.select("todo").await?;
@@ -70,24 +23,14 @@ pub async fn get_tasks(
     Ok((StatusCode::OK, Json(tasks)))
 }
 
-pub async fn add_task(State(state): State<ConnectionState>) -> Result<impl IntoResponse, ApiError> {
+// NOTE - extractors must come first, then Body, Json, Form, Multipart, etc.
+pub async fn add_task(
+    State(state): State<ConnectionState>,
+    Json(payload): Json<ToDoItem>,
+) -> Result<impl IntoResponse, ApiError> {
     let db = state.surrealdb;
 
-    // Probably move to database connection part upstream...
-    info!("Checking namespace and database...");
-    db.use_ns("SurrealDB")
-        .use_db("SurrealDB")
-        .await
-        .expect("Failed to use database.");
-
-    // Mock for now.
-    let task = ToDoItem {
-        name: "To Do".to_string(),
-        status: Status::Created,
-        task_id: 0u64,
-    };
-
-    let response: Option<ToDoItem> = db.create("todo").content(task).await?;
+    let response: Option<ToDoItem> = db.create("todo").content(payload).await?;
 
     let response = match response {
         Some(response) => response,
@@ -100,4 +43,25 @@ pub async fn add_task(State(state): State<ConnectionState>) -> Result<impl IntoR
 
     //
     Ok((StatusCode::OK, Json(response)))
+}
+
+/// Here, we also want to implement remove taks.
+pub async fn remove_task(
+    State(state): State<ConnectionState>,
+    Path(uuid): Path<String>,
+) -> Result<impl IntoResponse, ApiError> {
+    let db = state.surrealdb;
+
+    // This is a bit straight to the point. Potentially, we first
+    // query the record, then remove it based on its id. That way,
+    // we can potentially find records with duplicated UUID (not likely)
+    // and avoid removing both.
+    let response = db
+        .query("DELETE FROM todo WHERE uuid = $uuid")
+        .bind(("uuid", uuid))
+        .await?;
+
+    info!("{:?}", response);
+
+    Ok((StatusCode::OK, Json({})))
 }

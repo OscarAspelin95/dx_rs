@@ -1,3 +1,5 @@
+use std::env::VarError;
+
 use axum::http::StatusCode;
 use thiserror::Error;
 
@@ -13,6 +15,12 @@ pub enum ApiError {
 
     #[error("Database record creation failed")]
     DatabaseRecordCreateError(String),
+
+    #[error("Database is unhealthy")]
+    DatabaseUnhealthyError(String),
+
+    #[error("Missing environment variables")]
+    MissingEnvironmentVariable(String),
 }
 
 // Custom error handling for SomeError (misc error).
@@ -29,6 +37,13 @@ impl From<surrealdb::Error> for ApiError {
     }
 }
 
+impl From<VarError> for ApiError {
+    fn from(err: VarError) -> Self {
+        return self::ApiError::MissingEnvironmentVariable(err.to_string());
+    }
+}
+
+// We might need to split errors into separate (Api, Internal, etc).
 impl IntoResponse for ApiError {
     fn into_response(self) -> Response {
         let (status, error_message) = match self {
@@ -40,6 +55,14 @@ impl IntoResponse for ApiError {
             ApiError::DatabaseRecordCreateError(s) => (
                 StatusCode::BAD_REQUEST,
                 format!("Failed to create record: {:?}", s),
+            ),
+            ApiError::DatabaseUnhealthyError(s) => (
+                StatusCode::SERVICE_UNAVAILABLE,
+                format!("Database in unhealthy: {}", s),
+            ),
+            ApiError::MissingEnvironmentVariable(s) => (
+                StatusCode::FAILED_DEPENDENCY,
+                format!("Missing environment variable: {}", s),
             ),
         };
 
