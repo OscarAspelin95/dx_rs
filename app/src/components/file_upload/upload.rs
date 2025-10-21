@@ -153,18 +153,6 @@ pub fn UploadButton() -> Element {
 
 #[component]
 pub fn UploadComponent() -> Element {
-    // We can actually fetch db stuff from here.
-    use_resource(|| async {
-        let body = reqwest::get("http://localhost:8001/create_person/1")
-            .await
-            .expect("Failed to fetch from endpoint.")
-            .text()
-            .await
-            .expect("Failed to convert response to text.");
-
-        info!("Response from db: {:?}", body);
-    });
-
     // Enable modifying our uploaded files.
     let uploaded_files = use_signal(|| Vec::<UploadedFile>::new());
 
