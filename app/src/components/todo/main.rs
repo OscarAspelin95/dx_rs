@@ -5,6 +5,7 @@ use dioxus::prelude::*;
 use reqwest;
 use serde::{Deserialize, Serialize};
 use serde_json;
+use uuid;
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 enum Status {
@@ -46,6 +47,28 @@ pub fn ToDoTaskList() -> Element {
         }
     };
 
+    let remove_task = move |i: usize| async move {
+        // Return the locally removed task.
+        let task = tasks.remove(i);
+
+        spawn(async move {
+            let client = reqwest::Client::new();
+            let response = client
+                .delete(format!("http://localhost:8001/remove_task/{}", task.uuid))
+                .send()
+                .await;
+
+            match response {
+                Ok(response) => {
+                    info!("{:?}", response)
+                }
+                Err(e) => {
+                    error!("{:?}", e)
+                }
+            }
+        });
+    };
+
     rsx! {
         div { id: "task-container",
             {tasks.iter().enumerate().map(|(i, task)| rsx! {
@@ -65,8 +88,8 @@ pub fn ToDoTaskList() -> Element {
                     Button {
                         id: "remove-task-button",
                         "data-style": "destructive",
-                        onclick: move |_| {
-                            tasks.write().remove(i);
+                        onclick: move |_| async move {
+                            remove_task(i).await;
                         },
                         "X"
                     }
@@ -81,6 +104,41 @@ pub fn ToDoTaskList() -> Element {
 pub fn NewTask() -> Element {
     let mut task_name = use_signal::<String>(|| String::new());
     let mut tasks = consume_context::<Signal<Vec<ToDoItem>>>();
+
+    let create_new_task = move |mut task_name: Signal<String>| async move {
+        if task_name.read().is_empty() {
+            // Toast here that task name is empty.
+            return;
+        }
+
+        // New task instance.
+        let new_task = ToDoItem {
+            name: task_name.read().clone(),
+            status: Status::Created,
+            uuid: uuid::Uuid::now_v7().to_string(),
+        };
+
+        // Update locally
+        tasks.write().push(new_task.clone());
+
+        // Update database.
+        spawn(async move {
+            let client = reqwest::Client::new();
+            let response = client
+                .post("http://localhost:8001/add_task")
+                .json(&new_task)
+                .send()
+                .await;
+            match response {
+                Ok(response) => info!("Success: {:?}", response),
+                Err(e) => error!("Error: {:?}", e),
+            }
+        });
+
+        // Clear on success.
+        task_name.write().clear();
+    };
+
     rsx! {
         div { id: "new-task-container",
             input {
@@ -93,28 +151,9 @@ pub fn NewTask() -> Element {
             }
             Button {
                 id: "",
-                onclick: move |_| {
-                    if !task_name.read().is_empty() {
-                        let new_task = ToDoItem {
-                            name: task_name.read().clone(),
-                            status: Status::Created,
-                            uuid: "some_uuid".into(),
-                        };
-                        tasks.write().push(new_task.clone());
-                        spawn(async move {
-                            let client = reqwest::Client::new();
-                            let response = client
-                                .post("http://localhost:8001/add_task")
-                                .json(&new_task)
-                                .send()
-                                .await;
-                            match response {
-                                Ok(response) => info!("Success: {:?}", response),
-                                Err(e) => error!("Error: {:?}", e),
-                            }
-                        });
-                        task_name.write().clear();
-                    }
+                // Move to upstream closure
+                onclick: move |_| async move {
+                    create_new_task(task_name).await;
                 },
                 "Add"
             }

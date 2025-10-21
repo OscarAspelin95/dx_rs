@@ -52,10 +52,6 @@ pub async fn remove_task(
 ) -> Result<impl IntoResponse, ApiError> {
     let db = state.surrealdb;
 
-    // This is a bit straight to the point. Potentially, we first
-    // query the record, then remove it based on its id. That way,
-    // we can potentially find records with duplicated UUID (not likely)
-    // and avoid removing both.
     let response = db
         .query("DELETE FROM todo WHERE uuid = $uuid")
         .bind(("uuid", uuid))

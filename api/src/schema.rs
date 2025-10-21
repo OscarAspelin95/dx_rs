@@ -2,14 +2,7 @@ use std::fmt::Debug;
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Person {
-    pub first_name: String,
-    pub last_name: String,
-    pub email: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum Status {
     #[serde(rename = "completed")]
     Completed,
@@ -17,7 +10,7 @@ pub enum Status {
     Created,
 }
 
-#[derive(Serialize, Debug, Deserialize)]
+#[derive(Serialize, Debug, Deserialize, Clone)]
 pub struct ToDoItem {
     pub name: String,
     pub status: Status,

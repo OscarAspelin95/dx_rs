@@ -15,6 +15,7 @@ serde_json = {version = "1.0.145"}
 surrealdb = {version = "2.3.10", optional = true}
 tokio = {version = "*", features = ["full"], optional = true}
 reqwest = {version = "0.12.24"}
+uuid = {version = "1.18.1", features = ["v7"]}
 
 [features]
 default = ["desktop"]
