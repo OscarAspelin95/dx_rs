@@ -7,7 +7,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-dioxus = { version = "0.7.0-rc.2", features = ["router", "fullstack"] }
+dioxus = { version = "0.7.0-rc.3", features = ["router", "fullstack"] }
 dioxus-primitives = { git = "https://github.com/DioxusLabs/components", version = "0.0.1" }
 tracing = { version = "0.1", features = ["std"] }
 serde = {version = "1.0.228", features = ['derive']}
@@ -15,11 +15,13 @@ serde_json = {version = "1.0.145"}
 surrealdb = {version = "2.3.10", optional = true}
 tokio = {version = "*", features = ["full"], optional = true}
 reqwest = {version = "0.12.24"}
-uuid = {version = "1.18.1", features = ["v7"]}
+# "js" feature required for web-assembly.
+uuid = {version = "1.18.1", features = ["v7", "js"]}
 
 [features]
 default = ["desktop"]
 web = ["dioxus/web"]
 desktop = ["dioxus/desktop"]
 mobile = ["dioxus/mobile"]
+# NOTE - surrealdb might not be required since we are only using reqwest.
 server = ["dioxus/server", "dep:surrealdb", "dep:tokio"]
