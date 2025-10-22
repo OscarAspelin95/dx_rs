@@ -1,7 +1,11 @@
+use std::time::Duration;
+
 use crate::components::Button;
 use crate::components::Checkbox;
 use crate::components::Separator;
+use crate::components::ToastProvider;
 use dioxus::prelude::*;
+use dioxus_primitives::toast::{use_toast, ToastOptions};
 use reqwest;
 use serde::{Deserialize, Serialize};
 use serde_json;
@@ -33,6 +37,8 @@ impl ToDoItem {
 }
 #[component]
 pub fn ToDoTaskList() -> Element {
+    let toast_api = use_toast();
+
     let mut tasks: Signal<Vec<ToDoItem>> = consume_context::<Signal<Vec<ToDoItem>>>();
 
     let toggle_task = move |i: usize| async move {
@@ -53,6 +59,13 @@ pub fn ToDoTaskList() -> Element {
                         info!("{:?}", response);
                     }
                     Err(e) => {
+                        toast_api.error(
+                            "Error".to_string(),
+                            ToastOptions::new()
+                                .description("Failed to update task in database.")
+                                .duration(Duration::from_secs(3))
+                                .permanent(false),
+                        );
                         error!("{:?}", e);
                     }
                 }
@@ -79,6 +92,13 @@ pub fn ToDoTaskList() -> Element {
                     info!("{:?}", response)
                 }
                 Err(e) => {
+                    toast_api.error(
+                        "Error".to_string(),
+                        ToastOptions::new()
+                            .description("Failed to update task in database.")
+                            .duration(Duration::from_secs(3))
+                            .permanent(false),
+                    );
                     error!("{:?}", e)
                 }
             }
@@ -118,12 +138,19 @@ pub fn ToDoTaskList() -> Element {
 
 #[component]
 pub fn NewTask() -> Element {
+    let toast_api = use_toast();
     let mut task_name = use_signal::<String>(|| String::new());
     let mut tasks = consume_context::<Signal<Vec<ToDoItem>>>();
 
     let create_new_task = move |mut task_name: Signal<String>| async move {
         if task_name.read().is_empty() {
-            // Toast here that task name is empty.
+            toast_api.error(
+                "Error".to_string(),
+                ToastOptions::new()
+                    .description("Please enter a task name.")
+                    .duration(Duration::from_secs(3))
+                    .permanent(false),
+            );
             return;
         }
 
@@ -147,7 +174,17 @@ pub fn NewTask() -> Element {
                 .await;
             match response {
                 Ok(response) => info!("Success: {:?}", response),
-                Err(e) => error!("Error: {:?}", e),
+                Err(e) => {
+                    toast_api.error(
+                        "Error".to_string(),
+                        ToastOptions::new()
+                            .description("Failed to update task in database.")
+                            .duration(Duration::from_secs(3))
+                            .permanent(false),
+                    );
+                    error!("Error: {:?}", e);
+                    return;
+                }
             }
         });
 
@@ -231,11 +268,13 @@ pub fn ToDoList() -> Element {
     });
 
     rsx! {
-        div { id: "todo-upper",
-            h1 { id: "todo-title", "ToDo List" }
-            NewTask {}
-            ToDoTaskList {}
-            RemoveAll {}
+        ToastProvider {
+            div { id: "todo-upper",
+                h1 { id: "todo-title", "ToDo List" }
+                NewTask {}
+                ToDoTaskList {}
+                RemoveAll {}
+            }
         }
     }
 }
