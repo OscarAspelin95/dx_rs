@@ -216,14 +216,43 @@ pub fn NewTask() -> Element {
 
 #[component]
 pub fn RemoveAll() -> Element {
+    let toast_api = use_toast();
     let mut tasks = consume_context::<Signal<Vec<ToDoItem>>>();
+
+    let remove_all = move || async move {
+        // Remove all locally.
+        tasks.write().clear();
+
+        // Remove all tasks from database.
+        let client = reqwest::Client::new();
+        let response = client
+            .delete("http://localhost:8001/remove_all_tasks")
+            .send()
+            .await;
+
+        match response {
+            Ok(response) => {
+                info!("{:?}", response);
+            }
+            Err(e) => {
+                toast_api.error(
+                    "Error".to_string(),
+                    ToastOptions::new()
+                        .description("Failed to remove tasks.")
+                        .duration(Duration::from_secs(3))
+                        .permanent(false),
+                );
+                error!("{:?}", e);
+            }
+        }
+    };
 
     rsx! {
         Button {
             id: "",
             "data-style": "destructive",
-            onclick: move |_| {
-                tasks.write().clear();
+            onclick: move |_| async move {
+                remove_all().await;
             },
             "Clear All"
         }

@@ -46,7 +46,6 @@ pub async fn add_task(
     Ok((StatusCode::OK, Json(response)))
 }
 
-/// Here, we also want to implement remove taks.
 pub async fn remove_task(
     State(state): State<ConnectionState>,
     Path(uuid): Path<String>,
@@ -58,6 +57,17 @@ pub async fn remove_task(
         .bind(json!({"uuid":uuid}))
         .await?;
 
+    info!("{:?}", response);
+
+    Ok((StatusCode::OK, Json({})))
+}
+
+pub async fn remove_all_tasks(
+    State(state): State<ConnectionState>,
+) -> Result<impl IntoResponse, ApiError> {
+    let db = state.surrealdb;
+
+    let response: Vec<ToDoItem> = db.delete("todo").await?;
     info!("{:?}", response);
 
     Ok((StatusCode::OK, Json({})))

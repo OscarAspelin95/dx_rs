@@ -40,3 +40,8 @@ NOTE - due to issues related to dioxus rc-* versions, running `--web` does not c
 # Issues
 * Dioxus app still does not run with --web.
 * Dioxus app still not dockerized (need ngix or similar?).
+
+
+# TODO
+
+* Add "created" and "updated" db fields for databases.
