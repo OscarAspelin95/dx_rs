@@ -123,6 +123,7 @@ dependencies = [
  "axum",
  "log",
  "serde",
+ "serde_json",
  "simple_logger",
  "surrealdb",
  "thiserror 2.0.17",

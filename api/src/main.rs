@@ -1,7 +1,7 @@
 use axum::{
     Router,
     http::Method,
-    routing::{delete, get, post},
+    routing::{delete, get, patch, post},
 };
 use simple_logger::SimpleLogger;
 use tokio::net::TcpListener;
@@ -19,14 +19,14 @@ use routes::get_tasks;
 mod connection;
 use connection::connect_db;
 
-use crate::routes::{add_task, remove_task};
+use crate::routes::{add_task, remove_task, toggle_task};
 
 mod schema;
 
 fn app(state: ConnectionState) -> Router {
     let cors = CorsLayer::new()
         .allow_origin(Any)
-        .allow_methods([Method::GET, Method::DELETE, Method::POST])
+        .allow_methods([Method::GET, Method::POST, Method::DELETE, Method::PATCH])
         .allow_credentials(false);
 
     // Move to separate mods later on...
@@ -34,6 +34,7 @@ fn app(state: ConnectionState) -> Router {
         .route("/tasks", get(get_tasks))
         .route("/add_task", post(add_task))
         .route("/remove_task/{:uuid}", delete(remove_task))
+        .route("/toggle_task/{:uuid}", patch(toggle_task))
         .layer(cors)
         .with_state(state);
 

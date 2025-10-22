@@ -38,8 +38,24 @@ pub fn ToDoTaskList() -> Element {
     let toggle_task = move |i: usize| async move {
         match tasks.get_mut(i) {
             Some(mut task) => {
-                // Otherwise, we need to do it here.
+                // Toggle locally.
                 task.toggle();
+
+                // Update database.
+                let client = reqwest::Client::new();
+                let response = client
+                    .patch(format!("http://localhost:8001/toggle_task/{}", task.uuid))
+                    .send()
+                    .await;
+
+                match response {
+                    Ok(response) => {
+                        info!("{:?}", response);
+                    }
+                    Err(e) => {
+                        error!("{:?}", e);
+                    }
+                }
             }
             None => {
                 warn!("Task does not exist for index {}", i);
