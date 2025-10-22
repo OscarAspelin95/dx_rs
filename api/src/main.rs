@@ -1,26 +1,18 @@
-use axum::{
-    Router,
-    http::Method,
-    routing::{delete, get, patch, post},
-};
+use axum::Router;
+use axum::http::Method;
 use simple_logger::SimpleLogger;
 use tokio::net::TcpListener;
-use tower_http::cors::{Any, CorsLayer};
-
 mod state;
 use state::ConnectionState;
 
 mod errors;
 use errors::ApiError;
 
-mod routes;
-use routes::get_tasks;
-
 mod connection;
 use connection::connect_db;
+use tower_http::cors::{Any, CorsLayer};
 
-use crate::routes::{add_task, remove_task, toggle_task};
-
+mod routes;
 mod schema;
 
 fn app(state: ConnectionState) -> Router {
@@ -29,16 +21,7 @@ fn app(state: ConnectionState) -> Router {
         .allow_methods([Method::GET, Method::POST, Method::DELETE, Method::PATCH])
         .allow_credentials(false);
 
-    // Move to separate mods later on...
-    let router = Router::new()
-        .route("/tasks", get(get_tasks))
-        .route("/add_task", post(add_task))
-        .route("/remove_task/{:uuid}", delete(remove_task))
-        .route("/toggle_task/{:uuid}", patch(toggle_task))
-        .layer(cors)
-        .with_state(state);
-
-    return router;
+    routes::create_routes(state).layer(cors)
 }
 
 #[tokio::main]
