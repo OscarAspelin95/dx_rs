@@ -31,7 +31,7 @@ pub fn FileInput() -> Element {
 
     let handle_chosen_files = move |files: Vec<FileData>| async move {
         for file in files {
-            // Add.
+            // Add locally.
             uploaded_files
                 .write()
                 .push(UploadedFile { name: file.path() });
@@ -120,33 +120,72 @@ pub fn FileList() -> Element {
 pub fn UploadButton() -> Element {
     let mut uploaded_files = consume_context::<UploadedFileContext>().uploaded_files;
     let toast_api = use_toast();
-    let mut server_response = use_signal(|| String::new());
+
+    let upload_files = move || async move {
+        // Upload to server.
+        let client = reqwest::Client::new();
+
+        let files = uploaded_files.read().clone();
+        // We might want to spawn separate background processes here...
+        for file in files {
+            let fname = file.name.clone();
+            // There has to be a better way...
+            let fname = fname.file_name().unwrap().to_str().unwrap().to_string();
+
+            // Multipart form.
+            let payload = reqwest::multipart::Form::new()
+                .file(fname, file.name)
+                .await
+                .expect("Failed to generate multipart form.");
+
+            // Actual upload.
+            let response = client
+                .post("http://localhost:8001/upload")
+                .multipart(payload)
+                .send()
+                .await;
+
+            match response {
+                Ok(response) => {
+                    info!("{:?}", response)
+                }
+                Err(e) => {
+                    error!("{:?}", e)
+                }
+            }
+
+            //
+        }
+
+        // Upload success.
+        toast_api.success(
+            "Successfully uploaded files".to_string(),
+            ToastOptions::new()
+                .duration(Duration::from_secs(3))
+                .permanent(false),
+        );
+
+        // No processing yet.
+        toast_api.warning(
+            "File processing not implemented yet...".to_string(),
+            ToastOptions::new()
+                .duration(Duration::from_secs(3))
+                .permanent(false),
+        );
+
+        // Remove locally chosen files.
+        uploaded_files.write().clear();
+    };
 
     rsx! {
         if uploaded_files.len() > 0 {
             Button {
                 id: "upload-button",
                 onclick: move |_| async move {
-                    toast_api
-                        .success(
-                            "Successfully uploaded files".to_string(),
-                            ToastOptions::new().duration(Duration::from_secs(3)).permanent(false),
-                        );
-                    toast_api
-                        .warning(
-                            "File processing not implemented yet...".to_string(),
-                            ToastOptions::new().duration(Duration::from_secs(3)).permanent(false),
-                        );
-                    uploaded_files.write().clear();
-                    let response = process_files(uploaded_files.read().clone()).await.unwrap();
-                    server_response.set(response);
+                    upload_files().await;
                 },
                 "Upload"
             }
-        }
-
-        if !server_response.read().is_empty() {
-            div { "Server response: {server_response}" }
         }
     }
 }
@@ -167,9 +206,4 @@ pub fn UploadComponent() -> Element {
         FileList {}
         ToastProvider { UploadButton {} }
     }
-}
-
-#[server]
-async fn process_files(files: Vec<UploadedFile>) -> Result<String, ServerFnError> {
-    Ok("Processing message accepted".to_string())
 }
