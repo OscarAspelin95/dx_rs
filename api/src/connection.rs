@@ -1,4 +1,5 @@
 use log::info;
+use minio::s3::{Client as MinioClient, ClientBuilder, creds::StaticProvider};
 use std::time::Duration;
 use surrealdb::{
     Surreal,
@@ -13,7 +14,7 @@ pub async fn connect_db(max_retries: usize) -> Result<Surreal<Client>, ApiError>
 
     let db: Surreal<Client> = loop {
         // Move to .env later on.
-        info!("Attempting to connect to ws://db:8000");
+        info!("Attempting to connect to SurrealDB endpoint...");
 
         if retries > max_retries {
             return Err(ApiError::DatabaseConnectionTimeoutError());
@@ -57,4 +58,26 @@ pub async fn connect_db(max_retries: usize) -> Result<Surreal<Client>, ApiError>
     };
 
     Ok(db)
+}
+
+pub async fn connect_minio() -> Result<MinioClient, ApiError> {
+    let static_provider = StaticProvider::new(
+        &std::env::var("MINIO_ROOT_USER").unwrap(),
+        &std::env::var("MINIO_ROOT_PASSWORD").unwrap(),
+        None,
+    );
+
+    let client = ClientBuilder::new(
+        std::env::var("MINIO_HTTP_ENDPOINT")
+            .expect("Missing Minio HTTP Endpoint in environment.")
+            .parse()
+            .expect("Failed to parse minio base url"),
+    )
+    .provider(Some(Box::new(static_provider)))
+    .build();
+
+    match client {
+        Ok(client) => Ok(client),
+        Err(e) => Err(ApiError::SomeError(e.to_string())),
+    }
 }

@@ -1,6 +1,6 @@
 use std::env::VarError;
 
-use axum::http::StatusCode;
+use axum::{extract::multipart::MultipartError, http::StatusCode};
 use thiserror::Error;
 
 use axum::response::{IntoResponse, Response};
@@ -21,6 +21,12 @@ pub enum ApiError {
 
     #[error("Missing environment variables")]
     MissingEnvironmentVariable(String),
+
+    #[error("Invalid multiform")]
+    InvalidMultiFormError(String),
+
+    #[error("MinIO connection error")]
+    MinioConnectionError(String),
 }
 
 // Custom error handling for SomeError (misc error).
@@ -40,6 +46,18 @@ impl From<surrealdb::Error> for ApiError {
 impl From<VarError> for ApiError {
     fn from(err: VarError) -> Self {
         return self::ApiError::MissingEnvironmentVariable(err.to_string());
+    }
+}
+
+impl From<MultipartError> for ApiError {
+    fn from(err: MultipartError) -> Self {
+        return self::ApiError::InvalidMultiFormError(err.to_string());
+    }
+}
+
+impl From<minio::s3::error::Error> for ApiError {
+    fn from(err: minio::s3::error::Error) -> Self {
+        return self::ApiError::MinioConnectionError(err.to_string());
     }
 }
 
@@ -63,6 +81,14 @@ impl IntoResponse for ApiError {
             ApiError::MissingEnvironmentVariable(s) => (
                 StatusCode::FAILED_DEPENDENCY,
                 format!("Missing environment variable: {}", s),
+            ),
+            ApiError::InvalidMultiFormError(s) => (
+                StatusCode::BAD_REQUEST,
+                format!("Invalid multiform error {}", s),
+            ),
+            ApiError::MinioConnectionError(s) => (
+                StatusCode::BAD_REQUEST,
+                format!("Minio connection error {}", s),
             ),
         };
 

@@ -130,11 +130,11 @@ pub fn UploadButton() -> Element {
         for file in files {
             let fname = file.name.clone();
             // There has to be a better way...
-            let fname = fname.file_name().unwrap().to_str().unwrap().to_string();
+            // let fname = fname.file_name().unwrap().to_str().unwrap().to_string();
 
             // Multipart form.
             let payload = reqwest::multipart::Form::new()
-                .file(fname, file.name)
+                .file("file", file.name)
                 .await
                 .expect("Failed to generate multipart form.");
 
