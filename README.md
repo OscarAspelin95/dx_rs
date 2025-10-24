@@ -25,23 +25,30 @@ Getting Docker Engine is a bit tricky to get working, but following the official
 NOTE - due to issues related to dioxus rc-* versions, running `--web` does not currently work.
 
 # Endpoints
-`localhost:8080` - Surrealist DBMS.
-`localhost:8000` - Surrealdb database.
-`localhost:8001` - Rust Axum API.
+`localhost:8080` - Surrealist DBMS.<br>
+`localhost:8000` - Surrealdb database.<br>
+`localhost:8001` - Rust Axum API.<br>
+`localhost:9001` - MinIO console.<br>
 `localhost:XXXX` - Web App (currently does not work).
 
 # Stack
-[Rust](https://rust-lang.org/) as the programming language of choice.
-[Axum](https://github.com/tokio-rs/axum) as the backend API.
-[Dioxus](https://dioxuslabs.com/) as frontend.
-[SurrealDb](https://surrealdb.com/docs/surrealdb) as database.
-[Surrealist](https://surrealdb.com/docs/surrealist) as the DMS.
+[Rust](https://rust-lang.org/) programming language.<br>
+[Axum](https://github.com/tokio-rs/axum) as backend API.<br>
+[Nats](https://github.com/nats-io) as message broker.<br>
+[MinIO](https://github.com/minio/minio) for storage.<br>
+[Dioxus](https://dioxuslabs.com/) as frontend.<br>
+[SurrealDb](https://surrealdb.com/docs/surrealdb) as database.<br>
+[Surrealist](https://surrealdb.com/docs/surrealist) as the DBMS.
 
 # Issues
 * Dioxus app still does not run with --web.
 * Dioxus app still not dockerized (need ngix or similar?).
 
-
 # TODO
 
-* Add "created" and "updated" db fields for databases.
+## Main goals
+* Add opentelemetry with prometheus and grafana for metrics and tracing.
+* Explore SurrealDB capabilities.
+* Await a stable Dioxus release.
+* Implement NATS message queue.
+* Enable login with google/github and optionally signup with email/password.
