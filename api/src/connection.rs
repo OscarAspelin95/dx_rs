@@ -8,6 +8,9 @@ use surrealdb::{
 };
 
 use crate::errors::ApiError;
+use crate::nats_streams::create_streams;
+use async_nats::Client as NatsClient;
+use async_nats::jetstream::Context as NatsContext;
 
 pub async fn connect_db(max_retries: usize) -> Result<Surreal<Client>, ApiError> {
     let mut retries: usize = 0;
@@ -80,4 +83,16 @@ pub async fn connect_minio() -> Result<MinioClient, ApiError> {
         Ok(client) => Ok(client),
         Err(e) => Err(ApiError::SomeError(e.to_string())),
     }
+}
+
+pub async fn connect_nats() -> Result<NatsContext, ApiError> {
+    let nats_client: NatsClient = async_nats::connect(&std::env::var("NATS_URL")?).await?;
+
+    // Enable jetstream.
+    let jetstream = async_nats::jetstream::new(nats_client);
+
+    // Create the different streams we need.
+    let _ = create_streams(&jetstream).await?;
+
+    Ok(jetstream)
 }

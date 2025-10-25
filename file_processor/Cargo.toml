@@ -1,0 +1,13 @@
+[package]
+name = "file_processor"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+async-nats = {version = "0.44.2"}
+futures = {version = "0.3.31"}
+tokio = {version = "*", features = ["full"]}
+serde = {version = "*", features = ["derive"]}
+serde_json = {version = "*"}
+log = {version = "*"}
+simple_logger = {version = "*"}

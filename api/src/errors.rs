@@ -1,5 +1,6 @@
 use std::env::VarError;
 
+use async_nats::{self, ConnectErrorKind, jetstream::context::CreateStreamErrorKind};
 use axum::{extract::multipart::MultipartError, http::StatusCode};
 use thiserror::Error;
 
@@ -27,6 +28,12 @@ pub enum ApiError {
 
     #[error("MinIO connection error")]
     MinioConnectionError(String),
+
+    #[error("NATS connection error")]
+    NatsConnectionError(String),
+
+    #[error("NATS stream creation error")]
+    NatsStreamError(String),
 }
 
 // Custom error handling for SomeError (misc error).
@@ -61,6 +68,18 @@ impl From<minio::s3::error::Error> for ApiError {
     }
 }
 
+impl From<async_nats::error::Error<ConnectErrorKind>> for ApiError {
+    fn from(err: async_nats::error::Error<ConnectErrorKind>) -> Self {
+        return self::ApiError::NatsConnectionError(err.to_string());
+    }
+}
+
+impl From<async_nats::error::Error<CreateStreamErrorKind>> for ApiError {
+    fn from(err: async_nats::error::Error<CreateStreamErrorKind>) -> Self {
+        return self::ApiError::NatsStreamError(err.to_string());
+    }
+}
+
 // We might need to split errors into separate (Api, Internal, etc).
 impl IntoResponse for ApiError {
     fn into_response(self) -> Response {
@@ -89,6 +108,14 @@ impl IntoResponse for ApiError {
             ApiError::MinioConnectionError(s) => (
                 StatusCode::BAD_REQUEST,
                 format!("Minio connection error {}", s),
+            ),
+            ApiError::NatsConnectionError(s) => (
+                StatusCode::BAD_REQUEST,
+                format!("Nats connection error {}", s),
+            ),
+            ApiError::NatsStreamError(s) => (
+                StatusCode::BAD_REQUEST,
+                format!("Nats stream creation error {}", s),
             ),
         };
 

@@ -9,10 +9,14 @@ use state::ConnectionState;
 mod errors;
 use errors::ApiError;
 
+mod nats_streams;
+
 mod connection;
 use connection::{connect_db, connect_minio};
 
 use tower_http::cors::{Any, CorsLayer};
+
+use crate::connection::connect_nats;
 
 mod minio_upload;
 mod routes;
@@ -36,10 +40,12 @@ async fn main() -> Result<(), ApiError> {
 
     let db = connect_db(3).await?;
     let minio = connect_minio().await?;
+    let nats = connect_nats().await?;
 
     let state = ConnectionState {
         surrealdb: db,
         minio: minio,
+        nats: nats,
     };
 
     let app = app(state);

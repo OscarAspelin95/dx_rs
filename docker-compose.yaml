@@ -21,9 +21,22 @@ services:
     depends_on:
       - db
       - minio
+      - nats
 
     env_file:
       - .env
+
+  file_processor:
+    ports:
+      - "7001:7001"
+    build:
+      context: ./file_processor
+    env_file:
+      - .env
+    depends_on:
+      - minio
+      - nats
+      - api
 
   minio:
     image: minio/minio:latest
@@ -45,3 +58,21 @@ services:
       start_period: 10s
     volumes:
       - "./minio:/data"
+
+
+  nats:
+    image: "nats:2.12.1-alpine3.22"
+    command: [ '--jetstream', '--http_port', '8222', '--store_dir', '/data']
+    ports:
+      - '4222:4222'
+      # Health and in the future also metrics.
+      # - '8222:8222'
+    volumes:
+      - ./nats:/data
+
+  nats-nui:
+    image: ghcr.io/nats-nui/nui:latest
+    ports:
+      - '31311:31311'
+    depends_on:
+      - nats

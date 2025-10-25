@@ -5,4 +5,5 @@ use surrealdb::{Surreal, engine::remote::ws::Client};
 pub struct ConnectionState {
     pub surrealdb: Surreal<Client>,
     pub minio: s3::Client,
+    pub nats: async_nats::jetstream::Context,
 }
