@@ -8,7 +8,7 @@ use surrealdb::{
 };
 
 use crate::errors::ApiError;
-use crate::nats_streams::create_streams;
+use crate::nats::create_streams;
 use async_nats::Client as NatsClient;
 use async_nats::jetstream::Context as NatsContext;
 

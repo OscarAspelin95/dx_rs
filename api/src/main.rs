@@ -9,7 +9,7 @@ use state::ConnectionState;
 mod errors;
 use errors::ApiError;
 
-mod nats_streams;
+mod nats;
 
 mod connection;
 use connection::{connect_db, connect_minio};

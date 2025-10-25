@@ -1,5 +1,3 @@
-use std::vec;
-
 use async_nats::jetstream::Context as NatsContext;
 use async_nats::jetstream::consumer::Consumer as NatsConsumer;
 use async_nats::jetstream::consumer::push::Config as PushConsumerConfig;
@@ -27,7 +25,9 @@ use crate::errors::ApiError;
 /// * Subscriber - The client can fetch messages from a consumer by subscribing
 ///     to the consumer subject. This means the consumer deliver subject and the
 ///     client subscription subject should match.
-pub async fn create_file_upload_stream(jetstream: &NatsContext) -> Result<(), ApiError> {
+pub async fn create_file_upload_stream_with_consumer(
+    jetstream: &NatsContext,
+) -> Result<(), ApiError> {
     info!("Creating file upload stream...");
     let jetstream_config = Config {
         name: "file-uploaded".into(),
@@ -56,17 +56,12 @@ pub async fn create_file_upload_stream(jetstream: &NatsContext) -> Result<(), Ap
         .await
         .expect("Failed to create consumer for stream.");
 
-    info!("Consumer info:");
+    info!("Getting consumer info:");
     let consumer_info = push_consumer
         .info()
         .await
         .expect("Failed to get consumer info.");
     info!("{:?}", consumer_info);
 
-    Ok(())
-}
-
-pub async fn create_streams(jetstream: &NatsContext) -> Result<(), ApiError> {
-    create_file_upload_stream(jetstream).await?;
     Ok(())
 }
