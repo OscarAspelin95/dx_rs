@@ -8,9 +8,11 @@ use log::info;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
+use crate::errors::ApiError;
 use crate::minio_upload::file_upload;
 use crate::state::ConnectionState;
-use crate::{errors::ApiError, schema::UploadField};
+
+use crate::schema::file_upload::UploadField;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct NatsFileMessage {

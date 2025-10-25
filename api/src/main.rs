@@ -3,13 +3,17 @@ use axum::http::Method;
 use simple_logger::SimpleLogger;
 use tokio::net::TcpListener;
 
+mod minio_upload;
+mod nats;
+mod routes;
+mod schema;
+mod utils;
+
 mod state;
 use state::ConnectionState;
 
 mod errors;
 use errors::ApiError;
-
-mod nats;
 
 mod connection;
 use connection::{connect_db, connect_minio};
@@ -17,11 +21,6 @@ use connection::{connect_db, connect_minio};
 use tower_http::cors::{Any, CorsLayer};
 
 use crate::connection::connect_nats;
-
-mod minio_upload;
-mod routes;
-mod schema;
-mod utils;
 
 fn app(state: ConnectionState) -> Router {
     let cors = CorsLayer::new()

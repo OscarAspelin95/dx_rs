@@ -5,9 +5,9 @@ use axum::{
     response::IntoResponse,
 };
 
-use crate::schema::ToDoItem;
+use crate::errors::ApiError;
+use crate::schema::todo::{Status, ToDoItem};
 use crate::state::ConnectionState;
-use crate::{errors::ApiError, schema::Status};
 use log::info;
 
 use serde_json::json;
