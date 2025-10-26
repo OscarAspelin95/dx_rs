@@ -3,6 +3,7 @@ use axum::http::Method;
 use simple_logger::SimpleLogger;
 use tokio::net::TcpListener;
 
+mod auth;
 mod minio_upload;
 mod nats;
 mod routes;
@@ -45,6 +46,10 @@ async fn main() -> Result<(), ApiError> {
         surrealdb: db,
         minio: minio,
         nats: nats,
+        google_client_id: std::env::var("GOOGLE_CLIENT_ID")?,
+        google_client_secret: std::env::var("GOOGLE_CLIENT_SECRET")?,
+        google_redirect_url: std::env::var("GOOGLE_REDIRECT_URL")?,
+        jwt_secret: std::env::var("JWT_SECRET")?,
     };
 
     let app = app(state);

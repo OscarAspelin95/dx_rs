@@ -2,7 +2,7 @@ use axum::body::Bytes;
 use log::{error, info};
 use minio::s3::{Client, types::S3Api};
 
-use crate::{errors::ApiError, schema::UploadField, utils::time_now};
+use crate::{errors::ApiError, schema::file_upload::UploadField, utils::time_now};
 use uuid;
 
 async fn create_bucket_if_not_exists(bucket: &str, minio_client: &Client) -> Result<(), ApiError> {
