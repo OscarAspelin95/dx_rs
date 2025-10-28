@@ -1,10 +1,24 @@
-use async_nats;
-use async_nats::jetstream::consumer::Consumer as PushConsumer;
-use async_nats::jetstream::consumer::push::Config as PushConsumerConfig;
+use std::path::Path;
+
+use ::minio::s3::types::S3Api;
 use futures::StreamExt;
-use log::info;
+use log::{error, info};
 use simple_logger::SimpleLogger;
 use tokio;
+
+mod nats;
+use nats::connect_nats;
+
+mod minio;
+use minio::connect_minio;
+
+mod errors;
+
+mod utils;
+use utils::parse_url;
+
+mod schema;
+use schema::NatsMessage;
 
 #[tokio::main]
 async fn main() {
@@ -13,33 +27,73 @@ async fn main() {
         .expect("Failed to initialize logger");
     info!("Inside file processor.");
 
-    // Initialize NATS client.
-    info!("Establishing NATS client...");
-    let client =
-        async_nats::connect(std::env::var("NATS_URL").expect("Missing environment variable."))
-            .await
-            .expect("Failed to connect to client.");
-
-    // Enable JetStream.
-    info!("Enabling JetStream...");
-    let jetstream = async_nats::jetstream::new(client);
+    let consumer = connect_nats().await;
+    let minio_client = connect_minio().await.expect("Failed to get MinIO.");
 
     // Get file processor consumer.
-    let mut subscriber = jetstream
-        .client()
-        .subscribe("file-uploaded.process.deliver")
+    info!("Getting messages...");
+
+    let mut messages = consumer
+        .messages()
         .await
-        .expect("Failed to create subscriber");
+        .expect("Failed to get consumer messages");
 
     // Loop infinitely.
     info!("Ready to accept messages...");
-    while let Some(message) = subscriber.next().await {
-        info!("Got message!");
+    while let Some(message) = messages.next().await {
+        let message = match message {
+            Ok(message) => {
+                info!("Got message!");
+                message
+            }
+            Err(e) => {
+                error!("Got invalid message: {:?}", e);
+                continue;
+            }
+        };
 
-        // Bytes, need to convert with serde_json to appropriate data structure.
-        let payload = &message.payload;
+        //
+        let nats_message = serde_json::from_slice::<NatsMessage>(&message.payload)
+            .expect("Failed to parse payload");
+        info!("{:?}", nats_message);
 
-        info!("Payload: {:?}", payload);
-        println!("{:?}", payload);
+        // Parse url
+        let parsed_url = match parse_url(&nats_message.url) {
+            Some(parsed_url) => parsed_url,
+            None => continue,
+        };
+
+        info!("Parsed url: {:?}", parsed_url);
+
+        // Download file with MinIO...
+        let minio_response = minio_client
+            .get_object(parsed_url.bucket, parsed_url.key)
+            .send()
+            .await
+            .expect("");
+
+        let file_path = Path::new("temp_file.fastq.gz");
+        let _ = minio_response
+            .content
+            .to_file(file_path)
+            .await
+            .expect("Failed to write contents to file");
+
+        assert!(file_path.exists());
+        info!("Successfully downloaded file to {:?}", file_path);
+
+        // Do actual work...
+
+        // Acknowledge message...
+        match message.ack().await {
+            Ok(()) => {
+                info!("Successfully acknowledge message!");
+            }
+            Err(e) => {
+                error!("Failed to acknowledge message {:?}", e);
+            }
+        }
+
+        info!("");
     }
 }
