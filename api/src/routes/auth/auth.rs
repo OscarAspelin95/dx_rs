@@ -32,7 +32,7 @@ use crate::auth::middleware::create_jwt;
 pub async fn test_auth(
     State(state): State<ConnectionState>,
 ) -> Result<impl IntoResponse, ApiError> {
-    let db = state.surrealdb;
+    let db = state.surrealdb.client;
 
     match db.health().await {
         Ok(()) => info!(""),
@@ -196,7 +196,7 @@ pub async fn auth_google_callback(
     State(state): State<ConnectionState>,
     Json(payload): Json<OAuthExchange>,
 ) -> Result<Json<AuthResponse>, (StatusCode, String)> {
-    let db = state.surrealdb;
+    let db = state.surrealdb.client;
 
     match db.health().await {
         Ok(()) => info!("Database healthy!"),
@@ -205,9 +205,9 @@ pub async fn auth_google_callback(
 
     // Establish OAuth client.
     let oauth_client = get_oauth_client(
-        state.google_client_id,
-        state.google_client_secret,
-        state.google_redirect_url,
+        state.environment.google_client_id,
+        state.environment.google_client_secret,
+        state.environment.google_redirect_url,
     )
     .await;
 
@@ -255,7 +255,7 @@ pub async fn auth_google_callback(
         &db_user.id.to_string(),
         &db_user.email,
         &db_user.role.to_string(),
-        &state.jwt_secret,
+        &state.environment.jwt_secret,
     )
     .map_err(|e| {
         (
@@ -282,9 +282,9 @@ pub async fn auth_google_login(
 ) -> Result<impl IntoResponse, ApiError> {
     // Establish OAuth client.
     let oauth_client = get_oauth_client(
-        state.google_client_id,
-        state.google_client_secret,
-        state.google_redirect_url,
+        state.environment.google_client_id,
+        state.environment.google_client_secret,
+        state.environment.google_redirect_url,
     )
     .await;
 

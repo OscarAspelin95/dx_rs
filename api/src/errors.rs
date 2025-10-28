@@ -8,9 +8,11 @@ use axum::response::{IntoResponse, Response};
 
 #[derive(Error, Debug)]
 pub enum ApiError {
-    #[error("Some Error")]
-    SomeError(String),
+    // Any unknown error.
+    #[error("Unknown error")]
+    UnknownError(String),
 
+    // SurrealDB related.
     #[error("Database connection error")]
     DatabaseConnectionTimeoutError(),
 
@@ -20,26 +22,32 @@ pub enum ApiError {
     #[error("Database is unhealthy")]
     DatabaseUnhealthyError(String),
 
+    // Api related.
     #[error("Missing environment variables")]
     MissingEnvironmentVariable(String),
 
     #[error("Invalid multiform")]
     InvalidMultiFormError(String),
 
+    // MinIO Related.
     #[error("MinIO connection error")]
     MinioConnectionError(String),
 
+    // Nats related.
     #[error("NATS connection error")]
     NatsConnectionError(String),
 
     #[error("NATS stream creation error")]
     NatsStreamError(String),
+
+    #[error("NATS publish error")]
+    NatsPublishError(String),
 }
 
-// Custom error handling for SomeError (misc error).
+// Custom error handling for UnknownError (misc error).
 impl From<std::io::Error> for ApiError {
     fn from(err: std::io::Error) -> Self {
-        return self::ApiError::SomeError(err.kind().to_string());
+        return self::ApiError::UnknownError(err.kind().to_string());
     }
 }
 
@@ -80,11 +88,19 @@ impl From<async_nats::error::Error<CreateStreamErrorKind>> for ApiError {
     }
 }
 
-// We might need to split errors into separate (Api, Internal, etc).
+impl From<async_nats::error::Error<async_nats::jetstream::context::PublishErrorKind>> for ApiError {
+    fn from(
+        err: async_nats::error::Error<async_nats::jetstream::context::PublishErrorKind>,
+    ) -> Self {
+        return self::ApiError::NatsPublishError(err.to_string());
+    }
+}
+
+/// Not sure we should still call it ApiError. Maybe AppError?
 impl IntoResponse for ApiError {
     fn into_response(self) -> Response {
         let (status, error_message) = match self {
-            ApiError::SomeError(e) => (StatusCode::BAD_REQUEST, format!("{}", e)),
+            ApiError::UnknownError(e) => (StatusCode::BAD_REQUEST, format!("{}", e)),
             ApiError::DatabaseConnectionTimeoutError() => (
                 StatusCode::BAD_REQUEST,
                 format!("Database connection retries exceeded"),
@@ -117,6 +133,9 @@ impl IntoResponse for ApiError {
                 StatusCode::BAD_REQUEST,
                 format!("Nats stream creation error {}", s),
             ),
+            ApiError::NatsPublishError(s) => {
+                (StatusCode::BAD_REQUEST, format!("Nats publish error {}", s))
+            }
         };
 
         (status, error_message).into_response()

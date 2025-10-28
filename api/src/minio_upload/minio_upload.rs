@@ -21,7 +21,7 @@ async fn create_bucket_if_not_exists(bucket: &str, minio_client: &Client) -> Res
         },
         Err(e) => {
             error!("{:?}", e);
-            Err(ApiError::SomeError(
+            Err(ApiError::UnknownError(
                 "Failed to check if minio bucket exists.".into(),
             ))
         }

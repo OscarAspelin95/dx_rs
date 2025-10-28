@@ -47,8 +47,11 @@ NOTE - due to issues related to dioxus rc-* versions, running `--web` does not c
 # TODO
 
 ## Main goals
+* Consider adding a Rust workspace for relevant Rust services.
 * Add opentelemetry with prometheus and grafana for metrics and tracing.
 * Explore SurrealDB capabilities.
 * Await a stable Dioxus release.
 * Implement NATS message queue.
 * Enable login with google/github and optionally signup with email/password.
+    * Fix oauth API endpoints.
+    * Enable JWT with refresh tokens.

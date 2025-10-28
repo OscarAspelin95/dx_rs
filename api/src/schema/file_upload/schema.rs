@@ -9,3 +9,8 @@ pub struct UploadField {
     pub created_at: String,
     pub uuid: String,
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct NatsMessage {
+    pub url: String,
+}

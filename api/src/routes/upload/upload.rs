@@ -5,27 +5,20 @@ use axum::{
     response::IntoResponse,
 };
 use log::info;
-use serde::{Deserialize, Serialize};
 use serde_json::json;
 
-use crate::errors::ApiError;
 use crate::minio_upload::file_upload;
-use crate::state::ConnectionState;
-
 use crate::schema::file_upload::UploadField;
-
-#[derive(Debug, Serialize, Deserialize)]
-struct NatsFileMessage {
-    url: String,
-}
+use crate::state::ConnectionState;
+use crate::{errors::ApiError, nats::publisher::file_upload::nats_publish_upload};
 
 pub async fn upload_file(
     State(state): State<ConnectionState>,
     mut multipart: Multipart,
 ) -> Result<impl IntoResponse, ApiError> {
-    let db = state.surrealdb;
-    let minio = state.minio;
-    let nats = state.nats;
+    let db = state.surrealdb.client;
+    let minio = state.minio.client;
+    let nats = state.nats.client;
 
     // Might not be ideal to do stuff here in the while loop.
     // Alternatively, we defined Optional placeholder values first,
@@ -33,6 +26,10 @@ pub async fn upload_file(
     // * file_upload.
     // * create database record.
     // * Publish to NATS.
+
+    // Temp solution.
+    let mut url: Option<String> = None;
+
     while let Some(field) = multipart.next_field().await? {
         let name = field.name();
         match name {
@@ -42,6 +39,9 @@ pub async fn upload_file(
                 let file_contents = field.bytes().await?;
                 let upload_field =
                     file_upload("my-bucket", &file_name, file_contents, &minio).await?;
+
+                // Temp solution.
+                url = Some(upload_field.url.clone());
 
                 // Write url to database.
                 let response: Option<UploadField> =
@@ -55,29 +55,16 @@ pub async fn upload_file(
         }
     }
 
-    let nats_file_message = NatsFileMessage {
-        url: "my_url".into(),
-    };
-
     // Async publish to NATS.
+    // Not sure we need async though.
     tokio::spawn(async move {
-        let ack = nats
-            .publish(
-                "file-uploaded.process",
-                serde_json::to_string(&nats_file_message)
-                    .expect("Failed to serialize NATS message.")
-                    // Fix.
-                    .into(),
-            )
+        nats_publish_upload(nats, url.unwrap())
             .await
-            .expect("Failed to publish NATS message.");
-
-        ack.await
-            .expect("Message could not be acknowledged by the server.");
+            .expect("Failed to publish nats upload message")
     })
     .await
     // Fix.
-    .map_err(|err| ApiError::SomeError(err.to_string()))?;
+    .map_err(|err| ApiError::UnknownError(err.to_string()))?;
 
     // multipart ... something.
     Ok((StatusCode::OK, Json(json!({"upload": "success"}))))

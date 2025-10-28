@@ -15,7 +15,7 @@ use serde_json::json;
 pub async fn get_tasks(
     State(state): State<ConnectionState>,
 ) -> Result<impl IntoResponse, ApiError> {
-    let db = state.surrealdb;
+    let db = state.surrealdb.client;
 
     // We just select all tasks for now.
     let tasks: Vec<ToDoItem> = db.select("todo").await?;
@@ -29,7 +29,7 @@ pub async fn add_task(
     State(state): State<ConnectionState>,
     Json(payload): Json<ToDoItem>,
 ) -> Result<impl IntoResponse, ApiError> {
-    let db = state.surrealdb;
+    let db = state.surrealdb.client;
 
     let response: Option<ToDoItem> = db.create("todo").content(payload).await?;
 
@@ -50,7 +50,7 @@ pub async fn remove_task(
     State(state): State<ConnectionState>,
     Path(uuid): Path<String>,
 ) -> Result<impl IntoResponse, ApiError> {
-    let db = state.surrealdb;
+    let db = state.surrealdb.client;
 
     let response = db
         .query("DELETE FROM todo WHERE uuid = $uuid")
@@ -65,7 +65,7 @@ pub async fn remove_task(
 pub async fn remove_all_tasks(
     State(state): State<ConnectionState>,
 ) -> Result<impl IntoResponse, ApiError> {
-    let db = state.surrealdb;
+    let db = state.surrealdb.client;
 
     let response: Vec<ToDoItem> = db.delete("todo").await?;
     info!("{:?}", response);
@@ -79,7 +79,7 @@ pub async fn toggle_task(
     State(state): State<ConnectionState>,
     Path(uuid): Path<String>,
 ) -> Result<impl IntoResponse, ApiError> {
-    let db = state.surrealdb;
+    let db = state.surrealdb.client;
 
     // Get the todo item from db.
     // Realistically, we only need the status column, not the entire object.
