@@ -1,0 +1,17 @@
+services:
+  nats:
+    image: "nats:2.12.1-alpine3.22"
+    command: [ '--jetstream', '--http_port', '8222', '--store_dir', '/data']
+    ports:
+      - '4222:4222'
+      # Health and in the future also metrics.
+      # - '8222:8222'
+    volumes:
+      - ../nats_data:/data
+
+  nats-nui:
+    image: ghcr.io/nats-nui/nui:latest
+    ports:
+      - '31311:31311'
+    depends_on:
+      - nats

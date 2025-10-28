@@ -27,4 +27,4 @@ clean-minio:
 	sudo rm -rf ./minio/*
 
 clean-all:
-	sudo rm -rf ./db/surrealdb/* && sudo rm -rf ./nats/* && sudo rm -rf ./minio/* && docker system prune --volumes -f
+	sudo rm -rf ./db/surrealdb/* && sudo rm -rf ./nats_data/* && sudo rm -rf ./minio_data/* && docker system prune --volumes -f

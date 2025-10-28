@@ -1,0 +1,16 @@
+services:
+  file_processor:
+    ports:
+      - "7001:7001"
+    build:
+      context: ../file_processor
+    env_file:
+      - ../.env
+    depends_on:
+      - minio
+      - nats
+      - api
+
+
+
+
