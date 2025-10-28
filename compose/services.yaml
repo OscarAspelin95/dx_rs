@@ -1,9 +1,11 @@
 services:
-  file_processor:
+  fastq_service:
     ports:
       - "7001:7001"
     build:
-      context: ../file_processor
+      context: ../services
+      dockerfile: "Dockerfile.fastq_service"
+
     env_file:
       - ../.env
     depends_on:

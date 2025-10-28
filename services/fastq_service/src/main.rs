@@ -1,6 +1,7 @@
 use std::path::Path;
 
 use ::minio::s3::types::S3Api;
+use async_nats::jetstream::AckKind;
 use futures::StreamExt;
 use log::{error, info};
 use simple_logger::SimpleLogger;
@@ -20,6 +21,12 @@ use utils::parse_url;
 mod schema;
 use schema::NatsMessage;
 
+mod handle_message;
+use handle_message::handle_message;
+
+mod config;
+
+/// Entrypoint - check for messages that are put on the NATS consumer queue.
 #[tokio::main]
 async fn main() {
     SimpleLogger::new()
@@ -38,7 +45,6 @@ async fn main() {
         .await
         .expect("Failed to get consumer messages");
 
-    // Loop infinitely.
     info!("Ready to accept messages...");
     while let Some(message) = messages.next().await {
         let message = match message {
@@ -83,17 +89,19 @@ async fn main() {
         info!("Successfully downloaded file to {:?}", file_path);
 
         // Do actual work...
+        // Later on, return filtered file so we can upload to MinIO.
+        let handle_result = handle_message(file_path);
 
         // Acknowledge message...
-        match message.ack().await {
-            Ok(()) => {
-                info!("Successfully acknowledge message!");
-            }
+        match handle_result {
+            Ok(()) => message.ack().await.expect("Failed to ack message."),
             Err(e) => {
-                error!("Failed to acknowledge message {:?}", e);
+                error!("{:?}", e);
+                message
+                    .ack_with(AckKind::Nak(None))
+                    .await
+                    .expect("Failed to nack message.");
             }
         }
-
-        info!("");
     }
 }

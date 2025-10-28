@@ -6,7 +6,7 @@ services:
     # Change to environment variables.
     command: "start --user root --pass root rocksdb:/db/surrealdb"
     volumes:
-      - "../db:/db"
+      - "../data/surrealdb:/db"
   dbms:
     image: "surrealdb/surrealist:latest"
     ports:

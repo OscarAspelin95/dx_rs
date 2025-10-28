@@ -7,7 +7,7 @@ services:
       # Health and in the future also metrics.
       # - '8222:8222'
     volumes:
-      - ../nats_data:/data
+      - ../data/nats:/data
 
   nats-nui:
     image: ghcr.io/nats-nui/nui:latest

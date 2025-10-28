@@ -24,12 +24,63 @@ Getting Docker Engine is a bit tricky to get working, but following the official
 
 NOTE - due to issues related to dioxus rc-* versions, running `--web` does not currently work.
 
+## Project structure
+
+`api/` - Rust Axum API.<br>
+`app/` - Dioxus frontend App.<br>
+`compose/` - Docker compose files.<br>
+`data/` - Volume mounted storage for minio, nats and surrealdb.<br>
+`services` - Rust microservices (workspace oriented).
+
+
+## Environment file
+In order for the application to work properly, a .env file is required on the `dx_rs` root directory. Currently, a single .env file is used but this is subject to change into service specific .env files later on.
+
+```toml
+# SurrealDB.
+SURREALDB_ENDPOINT="db:8000"
+ROOT_USERNAME="your_root_username"
+ROOT_PASSWORD="your_root_password"
+SURREALDB_NAMESPACE="your_namespace"
+SURREALDB_DBNAME="your_db_name"
+
+# MinIO.
+MINIO_HTTP_ENDPOINT="http://minio:9000"
+MINIO_ENDPOINT="minio:9000"
+MINIO_ROOT_USER="your_minio_username"
+MINIO_ROOT_PASSWORD="your_minio_password"
+
+# NATS.
+NATS_URL="nats://nats:4222"
+
+# Google authentication.
+GOOGLE_CLIENT_ID="your_google_client_id"
+GOOGLE_CLIENT_SECRET="your_google_client_secret"
+GOOGLE_REDIRECT_URL="where_to_redirect_upon_google_oauth_authentication"
+
+# JWT
+JWT_SECRET="your_random_jtw_secret"
+```
+
 # Endpoints
+### App
+`localhost:XXXX` - Web App (currently does not work).
+
+### Database
 `localhost:8080` - Surrealist DBMS.<br>
 `localhost:8000` - Surrealdb database.<br>
+
+### API
 `localhost:8001` - Rust Axum API.<br>
+
+### MinIO
 `localhost:9001` - MinIO console.<br>
-`localhost:XXXX` - Web App (currently does not work).
+
+### NATS
+`localhost:31311` - NATS console<br>
+
+### Services
+`localhost:7001` - Fastq service.<br>
 
 # Stack
 [Rust](https://rust-lang.org/) programming language.<br>

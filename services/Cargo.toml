@@ -1,0 +1,26 @@
+[workspace]
+resolver = "3"
+members = ["fastq_service", "shared"]
+
+[workspace.dependencies]
+# Async
+futures = {version = "0.3.31"}
+tokio = {version = "*", features = ["full"]}
+
+# Connections
+async-nats = {version = "0.44.2"}
+minio = {version = "0.3.0"}
+
+# Serializing.
+serde = {version = "*", features = ["derive"]}
+serde_json = {version = "1.0.145"}
+
+# Logging.
+log = {version = "0.4.28"}
+simple_logger = {version = "5.1.0"}
+
+# Error handling.
+thiserror = {version = "2.0.17"}
+
+# Misc.
+regex = {version = "1.12.2"}

@@ -1,0 +1,27 @@
+[package]
+name = "shared"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+# Async
+futures = {workspace=true}
+tokio = {workspace = true}
+
+# Connections
+async-nats = {workspace=true}
+minio = {workspace=true}
+
+# Serializing.
+serde = {workspace = true}
+serde_json = {workspace=true}
+
+# Logging.
+log = {workspace=true}
+simple_logger = {workspace=true}
+
+# Error handling.
+thiserror = {workspace=true}
+
+# Misc.
+regex = {workspace=true}
