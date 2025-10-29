@@ -1,12 +1,10 @@
 use async_nats::jetstream::Context as NatsContext;
 use async_nats::jetstream::consumer::Consumer as NatsConsumer;
 use async_nats::jetstream::consumer::push::Config as PushConsumerConfig;
-use async_nats::jetstream::consumer::{AckPolicy, DeliverPolicy};
-use async_nats::jetstream::stream::DiscardPolicy;
-use async_nats::{self, jetstream::stream::Config};
 use log::info;
 
 use crate::nats::NatsError;
+use crate::nats::streams::config::{StreamConsumerConfig, StreamType};
 
 /// Basics of NATS:
 /// * Stream - stores messages. We can define subjects
@@ -25,43 +23,55 @@ use crate::nats::NatsError;
 /// * Subscriber - The client can fetch messages from a consumer by subscribing
 ///     to the consumer subject. This means the consumer deliver subject and the
 ///     client subscription subject should match.
-pub async fn create_file_upload_stream_with_consumer(
+///
+/// Basically, for this function we:
+/// * Extract out pre-defined stream and consumer setup based on the stream type.
+/// * Create the stream itself.
+/// * Attach a push consumer.
+pub async fn create_stream_with_consumer(
     jetstream: &NatsContext,
+    stream_type: StreamType,
 ) -> Result<(), NatsError> {
-    info!("Creating file upload stream...");
-    let jetstream_config = Config {
-        name: "file-uploaded".into(),
-        max_messages: 1_000,
-        subjects: vec!["file-uploaded.*".into()],
-        discard: DiscardPolicy::Old,
-        ..Default::default()
-    };
-    jetstream.get_or_create_stream(&jetstream_config).await?;
+    let cfg = StreamConsumerConfig::from(stream_type);
+
+    let stream_name = cfg.stream.name.as_str();
+
+    info!("Creating {} stream...", stream_name);
+    jetstream.get_or_create_stream(&cfg.stream).await?;
 
     info!("Attaching durable push consumer...");
-    // We have learned some important stuff:
-    // * name and durable name should both be set to the same value.
-    // * No dots in consumer name, this can confuse NATS.
-    let push_consumer_config = PushConsumerConfig {
-        name: Some("file-uploaded-process".into()),
-        durable_name: Some("file-uploaded-process".into()),
-        filter_subject: "file-uploaded.process".into(),
-        deliver_subject: "file-uploaded.process.deliver".into(),
-        ack_policy: AckPolicy::Explicit,
-        deliver_policy: DeliverPolicy::All,
-        ..Default::default()
-    };
     let mut push_consumer: NatsConsumer<PushConsumerConfig> = jetstream
-        .create_consumer_on_stream(push_consumer_config, "file-uploaded")
+        .create_consumer_on_stream(cfg.consumer, stream_name)
         .await
         .expect("Failed to create consumer for stream.");
 
-    info!("Getting consumer info:");
+    info!("Getting consumer info...");
     let consumer_info = push_consumer
         .info()
         .await
         .expect("Failed to get consumer info.");
-    info!("{:?}", consumer_info);
+    info!("Succeeded:\n{:?}", consumer_info);
 
     Ok(())
+}
+
+// Get an already existing stream and consumer.
+pub async fn get_consumer_from_stream_type(
+    jetstream: &NatsContext,
+    stream_type: StreamType,
+) -> Result<NatsConsumer<PushConsumerConfig>, NatsError> {
+    let cfg = StreamConsumerConfig::from(stream_type);
+
+    let stream_name = cfg.stream.name.as_str();
+
+    // Get stream by name.
+    info!("Getting stream {}", &stream_name);
+    let stream = jetstream.get_stream(&stream_name).await?;
+
+    info!("Getting consumer {:?}...", &cfg.consumer.name);
+    let consumer: NatsConsumer<PushConsumerConfig> = stream
+        .get_consumer(&cfg.consumer.name.expect("Consumer name does not exist."))
+        .await?;
+
+    Ok(consumer)
 }

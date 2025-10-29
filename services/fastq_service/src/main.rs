@@ -8,39 +8,34 @@ use tokio;
 
 use shared::minio::{connect_minio, minio_download};
 use shared::nats::connect_nats;
-use shared::nats::consumer::get_consumer;
 use shared::nats::schema::fastq_service::FastqMessage;
+use shared::nats::streams::{config::StreamType, stream::get_consumer_from_stream_type};
 
 mod handle_message;
 use handle_message::handle_message;
+
+use crate::errors::FastqError;
 
 mod config;
 mod errors;
 
 /// Entrypoint - check for messages that are put on the NATS consumer queue.
 #[tokio::main]
-async fn main() {
-    SimpleLogger::new()
-        .init()
-        .expect("Failed to initialize logger");
-    info!("Inside file processor.");
+async fn main() -> Result<(), FastqError> {
+    info!("Inside fastq service.");
+    SimpleLogger::new().init()?;
 
-    let jetstream = connect_nats().await.expect("Failed to connect to NATS");
+    // Get connections and clients.
+    info!("Setting up connections...");
+    let jetstream = connect_nats().await?;
+    let consumer = get_consumer_from_stream_type(&jetstream, StreamType::FileUpload).await?;
+    let minio_client = connect_minio().await?;
 
-    let consumer = get_consumer(&jetstream, "file-uploaded", "file-uploaded-process")
-        .await
-        .expect("Failed to get consumer");
-
-    //
-    let minio_client = connect_minio().await.expect("Failed to get MinIO.");
-
-    // Get file processor consumer.
     info!("Getting messages...");
-
     let mut messages = consumer
         .messages()
         .await
-        .expect("Failed to get consumer messages");
+        .map_err(|err| FastqError::GetConsumerMessagesError(err.to_string()))?;
 
     info!("Ready to accept messages...");
     while let Some(message) = messages.next().await {
@@ -57,24 +52,18 @@ async fn main() {
 
         // Parse payload bytes.
         // Consider error handling with continue statement.
-        let nats_message = serde_json::from_slice::<FastqMessage>(&message.payload)
-            .expect("Failed to parse payload");
+        let nats_message = serde_json::from_slice::<FastqMessage>(&message.payload)?;
         info!("{:?}", nats_message);
 
         // Download file.
+        // We can change this later on to provide a directory and the function
+        // returns the file as outdir/<file_base_name>.
         let file_path = PathBuf::from("test.fastq.gz");
-        let download_response = minio_download(&minio_client, &nats_message.url, &file_path).await;
-
-        match download_response {
-            Ok(local_file) => {}
-            Err(e) => {
-                error!("{}", e);
-                continue;
-            }
-        }
+        minio_download(&minio_client, &nats_message.url, &file_path).await?;
 
         // Do actual work...
         // Later on, return filtered file so we can upload to MinIO.
+        info!("Running fastq_rs filter...");
         let handle_result = handle_message(&file_path);
 
         // Acknowledge message...
@@ -85,8 +74,10 @@ async fn main() {
                 message
                     .ack_with(AckKind::Nak(None))
                     .await
-                    .expect("Failed to nack message.");
+                    .map_err(|err| FastqError::MessageAckError(err.to_string()))?;
             }
         }
     }
+
+    Ok(())
 }

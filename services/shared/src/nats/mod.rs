@@ -6,5 +6,3 @@ pub use errors::NatsError;
 
 pub mod schema;
 pub mod streams;
-
-pub mod consumer;
