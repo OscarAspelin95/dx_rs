@@ -16,8 +16,11 @@ The Rust programming language is really coming along with respect to fullstack d
     - ✅ Api endpoints.
     - ✅ Oauth functionality.
     - 🚧 Frontend login.
+- 🚧 Opentelemetry
+
 
 # Requirements
+The application has been tested with the following versions:
 - Rust `>= 1.90`.
 - Dioxus CLI `0.7.0-rc.3`.
 - Ubuntu `24.04.3`.
@@ -42,13 +45,15 @@ Getting Docker Engine is a bit tricky to get working, but following the official
 NOTE - due to issues related to dioxus rc-* versions, running `--web` does not currently work.
 
 ## Project structure
-
-`api/` - Rust Axum API.<br>
-`app/` - Dioxus frontend App.<br>
-`compose/` - Docker compose files.<br>
-`data/` - Volume mounted storage for minio, nats and surrealdb.<br>
-`services/` - Rust microservices (workspace oriented).
-
+```json
+"app/"      -   Dioxus frontend App.
+"compose/"  -   Docker compose files.
+"data/"     -   Volume mounted storage for minio, nats and surrealdb.
+"services/" -   Rust (workspace) services:
+    "api/"              -   API (axum).
+    "fastq_service/"    -   Fastq processing.
+    "shared/"           -   Code shared by services.
+```
 
 ## Environment file
 In order for the application to work properly, a .env file is required on the `dx_rs` root directory. Currently, a single .env file is used but this is subject to change into service specific .env files later on.
@@ -111,16 +116,6 @@ JWT_SECRET="your_random_jtw_secret"
 # Overview
 ![diagram](https://github.com/OscarAspelin95/dx_rs/blob/8710a0ccfe26718bce9ed18e506542aabf2c135f/assets/diagram.svg)
 
-# Issues
+# Known Issues
 * Dioxus app still does not run with --web.
 * Dioxus app still not dockerized (need ngix or similar?).
-
-# TODO
-
-## Main goals
-* Add opentelemetry with prometheus and grafana for metrics and tracing.
-* Explore SurrealDB capabilities.
-* Await a stable Dioxus release.
-* Enable login with google/github and optionally signup with email/password.
-    * Fix oauth API endpoints.
-    * Enable JWT with refresh tokens.
