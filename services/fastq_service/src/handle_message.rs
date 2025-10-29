@@ -1,10 +1,10 @@
-use crate::errors::ProcessorError;
+use crate::errors::FastqError;
 use std::path::{Path, PathBuf};
 
 use crate::config::FilterConfig;
 use fastq_rs::filter::fastq_filter;
 
-pub fn handle_message(file: &Path) -> Result<(), ProcessorError> {
+pub fn handle_message(file: &Path) -> Result<(), FastqError> {
     let outfile = PathBuf::from("filtered.fastq.gz");
 
     let fastq = file.to_path_buf();
@@ -26,6 +26,6 @@ pub fn handle_message(file: &Path) -> Result<(), ProcessorError> {
 
     match filter_result {
         Ok(()) => Ok(()),
-        Err(e) => Err(ProcessorError::FastqRsFilterError(e.to_string())),
+        Err(e) => Err(FastqError::FastqRsFilterError(e.to_string())),
     }
 }

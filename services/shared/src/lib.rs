@@ -1,3 +1,4 @@
-pub fn my_shared_function(left: u64, right: u64) -> u64 {
-    left + right
-}
+pub mod database;
+pub mod minio;
+pub mod nats;
+pub mod utils;

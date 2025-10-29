@@ -1,3 +1,4 @@
+/// Input arguments to fastq_rs.
 pub struct FilterConfig {
     pub min_len: usize,
     pub max_len: usize,

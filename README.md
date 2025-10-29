@@ -1,11 +1,28 @@
 # Description
-The Rust programming language is really coming along with respect to fullstack development. This project has one goal - investigate the feasibility of using Rust for a fullstack microservices application.
+The Rust programming language is really coming along with respect to fullstack development. This project has one goal - create a Rust fullstack microservices application (local and on gcp).
+
+# Features
+- ✅ Todo list (only for testing purposes).
+- 🚧 Fastq parser
+    - ✅ File upload.
+    - ✅ Api endpoint.
+    - ✅ MinIO storage for files.
+    - ✅ NATS messaging to service.
+    - ✅ NATS messaging receival in service.
+    - ✅ Fastq processing.
+    - 🚧 Database write.
+    - 🚧 Frontend component.
+- 🚧 Login with Google Account
+    - ✅ Api endpoints.
+    - ✅ Oauth functionality.
+    - 🚧 Frontend login.
 
 # Requirements
 - Rust `>= 1.90`.
 - Dioxus CLI `0.7.0-rc.3`.
 - Ubuntu `24.04.3`.
-- Docker Engine.
+- Docker `28.4.0`
+- Docker Compose `2.39.2`
 
 # Installation
 ## Rust Programming Language
@@ -30,7 +47,7 @@ NOTE - due to issues related to dioxus rc-* versions, running `--web` does not c
 `app/` - Dioxus frontend App.<br>
 `compose/` - Docker compose files.<br>
 `data/` - Volume mounted storage for minio, nats and surrealdb.<br>
-`services` - Rust microservices (workspace oriented).
+`services/` - Rust microservices (workspace oriented).
 
 
 ## Environment file
@@ -98,11 +115,9 @@ JWT_SECRET="your_random_jtw_secret"
 # TODO
 
 ## Main goals
-* Consider adding a Rust workspace for relevant Rust services.
 * Add opentelemetry with prometheus and grafana for metrics and tracing.
 * Explore SurrealDB capabilities.
 * Await a stable Dioxus release.
-* Implement NATS message queue.
 * Enable login with google/github and optionally signup with email/password.
     * Fix oauth API endpoints.
     * Enable JWT with refresh tokens.

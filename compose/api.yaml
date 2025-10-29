@@ -3,7 +3,8 @@ services:
     ports:
       - "8001:8001"
     build:
-      context: "../api"
+      context: "../services"
+      dockerfile: "Dockerfile.api"
     depends_on:
       - db
       - minio

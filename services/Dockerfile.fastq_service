@@ -8,6 +8,7 @@ COPY ./Cargo.toml .
 COPY ./Cargo.lock .
 
 # Copy the packages we need.
+COPY ./api ./api
 COPY ./fastq_service ./fastq_service
 COPY ./shared ./shared
 
