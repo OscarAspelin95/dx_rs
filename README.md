@@ -114,7 +114,7 @@ JWT_SECRET="your_random_jtw_secret"
 [Surrealist](https://surrealdb.com/docs/surrealist) as the DBMS.
 
 # Overview
-![diagram](https://github.com/OscarAspelin95/dx_rs/blob/8710a0ccfe26718bce9ed18e506542aabf2c135f/assets/diagram.svg)
+![diagram](https://github.com/OscarAspelin95/dx_rs/blob/9a3c882e7390fa9c7e73915a7d69c5a97da9699b/assets/diagram.svg)
 
 # Known Issues
 * Dioxus app still does not run with --web.
