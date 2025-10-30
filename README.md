@@ -1,8 +1,11 @@
 # Description
-The Rust programming language is really coming along with respect to fullstack development. This project has one goal - create a Rust fullstack microservices application (local and on gcp).
+The Rust programming language is really coming along with respect to fullstack development. This project has one goal - create a Rust fullstack microservices application (local and on GCP).
+
+# Current State
+The Dioxus frontend currently is lagging behind, partially because of awaiting the official Dioxus 0.7.0 release and partially because a lot of focus has been directed towards the API, MinIO and NATS.
 
 # Features
-- ✅ Todo list (only for testing purposes).
+- ✅ Todo list Dioxus component (only for testing purposes).
 - 🚧 Fastq parser
     - ✅ File upload.
     - ✅ Api endpoint.
@@ -17,7 +20,6 @@ The Rust programming language is really coming along with respect to fullstack d
     - ✅ Oauth functionality.
     - 🚧 Frontend login.
 - 🚧 Opentelemetry
-
 
 # Requirements
 The application has been tested with the following versions:
@@ -38,14 +40,14 @@ Run `cargo install dioxus-cli --version 0.7.0-rc.3`. Alternatively, run `cargo b
 Getting Docker Engine is a bit tricky to get working, but following the official [Docker manual](https://docs.docker.com/engine/install/) should work.
 
 # How to use
-1. Run `make` to start docker instances.
+1. Run `make` to start docker instances. NOTE - this will take a while.
 2. `cd app`.
-3. `dx serve --desktop`.
+3. `dx serve --desktop`. NOTE - this will take a while.
 
 NOTE - due to issues related to dioxus rc-* versions, running `--web` does not currently work.
 
 ## Project structure
-```json
+```text
 "app/"      -   Dioxus frontend App.
 "compose/"  -   Docker compose files.
 "data/"     -   Volume mounted storage for minio, nats and surrealdb.

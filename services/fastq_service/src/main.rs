@@ -3,6 +3,7 @@ use std::path::PathBuf;
 use async_nats::jetstream::AckKind;
 use futures::StreamExt;
 use log::{error, info};
+use shared::database::connect_db;
 use simple_logger::SimpleLogger;
 use tokio;
 
@@ -14,9 +15,11 @@ use shared::nats::streams::{config::StreamType, stream::get_consumer_from_stream
 mod handle_message;
 use handle_message::handle_message;
 
+use crate::database::write_to_db;
 use crate::errors::FastqError;
 
 mod config;
+mod database;
 mod errors;
 
 /// Entrypoint - check for messages that are put on the NATS consumer queue.
@@ -28,6 +31,7 @@ async fn main() -> Result<(), FastqError> {
     // Get connections and clients.
     info!("Setting up connections...");
     let jetstream = connect_nats().await?;
+    let db = connect_db(3).await?;
     let consumer = get_consumer_from_stream_type(&jetstream, StreamType::FileUpload).await?;
     let minio_client = connect_minio().await?;
 
@@ -78,8 +82,7 @@ async fn main() -> Result<(), FastqError> {
                 };
 
                 info!("{:?}", fastq_response);
-
-                // let db_response = write_to_db(&fastq_response).await?;
+                write_to_db(fastq_response, &db).await?;
                 message.ack().await.expect("Failed to ack message.")
             }
             // Something

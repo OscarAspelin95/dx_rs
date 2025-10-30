@@ -1,5 +1,5 @@
 use log::SetLoggerError;
-use shared::{minio::MinIoError, nats::NatsError};
+use shared::{database::DatabaseError, minio::MinIoError, nats::NatsError};
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -25,11 +25,17 @@ pub enum FastqError {
     #[error("Failed to run fastq_rs")]
     FastqRsError(String),
 
+    #[error("Failed to write to database")]
+    DatabaseWriteError(String),
+
     #[error(transparent)]
     MinIo(#[from] MinIoError),
 
     #[error(transparent)]
     Nats(#[from] NatsError),
+
+    #[error(transparent)]
+    Database(#[from] DatabaseError),
 }
 
 impl From<serde_json::Error> for FastqError {
@@ -47,5 +53,11 @@ impl From<SetLoggerError> for FastqError {
 impl From<std::io::Error> for FastqError {
     fn from(err: std::io::Error) -> Self {
         self::FastqError::CreateDirectoryError(err.to_string())
+    }
+}
+
+impl From<surrealdb::Error> for FastqError {
+    fn from(err: surrealdb::Error) -> Self {
+        self::FastqError::DatabaseWriteError(err.to_string())
     }
 }

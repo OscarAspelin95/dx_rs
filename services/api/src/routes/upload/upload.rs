@@ -56,16 +56,8 @@ pub async fn upload_file(
         }
     }
 
-    // Async publish to NATS.
-    // Not sure we need async though.
-    tokio::spawn(async move {
-        nats_publish_upload(nats, url.unwrap())
-            .await
-            .expect("Failed to publish nats upload message")
-    })
-    .await
-    // Fix.
-    .map_err(|err| ApiError::UnknownError(err.to_string()))?;
+    // Send message.
+    nats_publish_upload(nats, url.unwrap()).await?;
 
     // multipart ... something.
     Ok((StatusCode::OK, Json(json!({"upload": "success"}))))

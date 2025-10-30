@@ -1,24 +1,18 @@
 use crate::errors::FastqError;
-use std::io::Read;
+use std::path::{Path, PathBuf};
 use std::time;
-use std::{
-    fs::create_dir_all,
-    path::{Path, PathBuf},
-};
 
 use crate::config::FilterConfig;
-use bytes::Bytes;
 use fastq_rs::{filter::fastq_filter, stats::fastq_stats};
 use log::info;
 use minio::s3::Client;
-use minio::s3::segmented_bytes::SegmentedBytes;
-use shared::minio::minio_upload;
+use shared::file_path;
+use shared::minio::minio_upload_file;
 use shared::nats::schema::fastq_service::{FastqMetrics, FastqStats};
+use shared::utils::file::file_name;
 
-fn fastq_rs_filter(fastq: &Path, outdir: &PathBuf) -> Result<PathBuf, FastqError> {
+fn fastq_rs_filter(fastq: &Path, outfile: &PathBuf) -> Result<(), FastqError> {
     let cfg = FilterConfig::default();
-
-    let filtered_fastq = outdir.join("filtered.fastq.gz");
 
     let filter_result = fastq_filter(
         Some(fastq.to_path_buf()),
@@ -30,29 +24,27 @@ fn fastq_rs_filter(fastq: &Path, outdir: &PathBuf) -> Result<PathBuf, FastqError
         cfg.max_softmasked,
         cfg.min_ambiguous,
         cfg.max_ambiguous,
-        Some(filtered_fastq.clone()),
+        Some(outfile.to_path_buf()),
     );
 
     match filter_result {
-        Ok(()) => Ok(filtered_fastq),
+        Ok(()) => Ok(()),
         Err(e) => Err(FastqError::FastqRsFilterError(e.to_string())),
     }
 }
 
-fn fastq_rs_stats(fastq: &Path, outdir: &PathBuf) -> Result<PathBuf, FastqError> {
-    let stats_json = outdir.join("stats.json");
-
-    let stats_result = fastq_stats(Some(fastq.to_path_buf()), Some(stats_json.clone()));
+fn fastq_rs_stats(fastq: &Path, outfile: PathBuf) -> Result<(), FastqError> {
+    let stats_result = fastq_stats(Some(fastq.to_path_buf()), Some(outfile));
 
     match stats_result {
-        Ok(()) => Ok(stats_json),
+        Ok(()) => Ok(()),
         Err(err) => Err(FastqError::FastqRsError(err.to_string())),
     }
 }
 
 /// We can streamline this later on.
-/// * Add better ergonomics for creating outdir (separate function?).
-/// * Break into separate functions.
+/// * Break into separate functions?
+/// * Consider using a temp dir that is removed once going out of scope.
 pub async fn handle_message(
     fastq: &Path,
     minio_client: &Client,
@@ -61,59 +53,31 @@ pub async fn handle_message(
 
     // Stats for raw fastq.
     info!("Running stats on raw fastq...");
-    let stats_raw_dir = PathBuf::from("raw");
-    create_dir_all(&stats_raw_dir)?;
-    let stats_raw = fastq_rs_stats(fastq, &stats_raw_dir)?;
-    assert!(stats_raw.exists());
+    let json_raw = file_path!("/tmp", "raw", "stats.json");
+    fastq_rs_stats(fastq, json_raw.clone())?;
 
     // Filter fastq.
     info!("Running fastq filter...");
-    let stats_filtered_dir = PathBuf::from("filtered");
-    create_dir_all(&stats_filtered_dir)?;
-    let filtered_fastq = fastq_rs_filter(fastq, &stats_filtered_dir)?;
-    assert!(&filtered_fastq.exists());
+    let filtered_fastq = file_path!("/tmp", "trimmed", "trimmed.fastq.gz");
+    fastq_rs_filter(fastq, &filtered_fastq)?;
 
     // Stats for filtered fastq.
     info!("Running stats on filtered fastq...");
-    let stats_filtered = fastq_rs_stats(fastq, &stats_filtered_dir)?;
-    assert!(stats_filtered.exists());
+    let json_trimmed = file_path!("/tmp", "trimmed", "stats.json");
+    fastq_rs_stats(&filtered_fastq, json_trimmed.clone())?;
 
     let elapsed = start.elapsed().as_secs();
 
     // Upload file to MinIO
-    let key = filtered_fastq
-        .file_name()
-        .expect("Invalid file name")
-        .to_str()
-        .expect("Invalid file name");
+    let key = file_name(filtered_fastq.clone());
 
-    // Later, we'll create two shared functions:
-    // * minio_upload_bytes
-    // * minio_upload_file (which wraps minio_upload_bytes).
-
-    // Because, it turns out it is rather difficult to convert
-    // Bytes<File> to Segmented bytes.
-
-    // Open file.
-    let mut file_handle = std::fs::File::open(&filtered_fastq)?;
-
-    // Read into buffer.
-    // Later, we probably don't want to read entire file at once.
-    let mut buf: Vec<u8> = Vec::new();
-    file_handle.read_to_end(&mut buf)?;
-
-    // Convert Vec<u8> -> Vec<Vec<Bytes>>
-    // Note sure about this because MinIO expects 5Mb chunks
-    // for all chunks except for the last one.
-    let b = Bytes::from_owner(buf);
-    let segbuf: SegmentedBytes = b.into();
-
-    let minio_url = minio_upload(minio_client, "file-upload-processed", key, segbuf).await?;
+    let minio_url =
+        minio_upload_file(minio_client, "file-upload-processed", &key, filtered_fastq).await?;
 
     // Construct FastqResponse
     let fastq_metrics = FastqMetrics {
-        metrics_raw: FastqStats::from_json(stats_raw)?,
-        metrics_filtered: FastqStats::from_json(stats_filtered)?,
+        metrics_raw: FastqStats::from_json(json_raw)?,
+        metrics_filtered: FastqStats::from_json(json_trimmed)?,
     };
 
     Ok((fastq_metrics, elapsed, minio_url))

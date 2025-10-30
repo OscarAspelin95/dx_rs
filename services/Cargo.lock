@@ -1729,6 +1729,7 @@ dependencies = [
  "serde_json",
  "shared",
  "simple_logger",
+ "surrealdb",
  "thiserror 2.0.17",
  "tokio",
 ]

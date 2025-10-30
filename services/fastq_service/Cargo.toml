@@ -8,6 +8,10 @@ edition = "2024"
 fastq_rs = {version = "*"}
 shared = {path = "../shared"}
 
+# We probably should remove this later on
+# and have a separate NATS consumer for all db writes.
+surrealdb = {workspace=true}
+
 # Async
 futures = {workspace=true}
 tokio = {workspace = true}
