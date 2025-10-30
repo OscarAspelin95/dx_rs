@@ -28,3 +28,4 @@ thiserror = {version = "2.0.17"}
 # Misc.
 regex = {version = "1.12.2"}
 chrono = {version = "0.4.42"}
+bytes = {version = "1.10.1"}

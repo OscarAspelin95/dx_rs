@@ -29,3 +29,4 @@ thiserror = {workspace=true}
 
 # Misc.
 regex = {workspace=true}
+bytes = {workspace=true}

@@ -8,7 +8,7 @@ use tokio;
 
 use shared::minio::{connect_minio, minio_download};
 use shared::nats::connect_nats;
-use shared::nats::schema::fastq_service::FastqMessage;
+use shared::nats::schema::fastq_service::{FastqMessage, FastqResponse};
 use shared::nats::streams::{config::StreamType, stream::get_consumer_from_stream_type};
 
 mod handle_message;
@@ -64,11 +64,25 @@ async fn main() -> Result<(), FastqError> {
         // Do actual work...
         // Later on, return filtered file so we can upload to MinIO.
         info!("Running fastq_rs filter...");
-        let handle_result = handle_message(&file_path);
+        let handle_result = handle_message(&file_path, &minio_client).await;
 
         // Acknowledge message...
         match handle_result {
-            Ok(()) => message.ack().await.expect("Failed to ack message."),
+            Ok((fastq_metrics, runtime, url)) => {
+                // Write to database.
+
+                let fastq_response = FastqResponse {
+                    metrics: fastq_metrics,
+                    runtime: runtime,
+                    url: url,
+                };
+
+                info!("{:?}", fastq_response);
+
+                // let db_response = write_to_db(&fastq_response).await?;
+                message.ack().await.expect("Failed to ack message.")
+            }
+            // Something
             Err(e) => {
                 error!("{:?}", e);
                 message

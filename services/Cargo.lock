@@ -1719,6 +1719,7 @@ name = "fastq_service"
 version = "0.0.1"
 dependencies = [
  "async-nats",
+ "bytes",
  "fastq_rs",
  "futures",
  "log",
@@ -4906,6 +4907,7 @@ name = "shared"
 version = "0.1.0"
 dependencies = [
  "async-nats",
+ "bytes",
  "chrono",
  "futures",
  "log",

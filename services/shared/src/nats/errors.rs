@@ -28,6 +28,12 @@ pub enum NatsError {
 
     #[error("NATS publish error")]
     NatsPublishError(String),
+
+    #[error("IO error")]
+    IoError(String),
+
+    #[error("Serialization error")]
+    SerializationError(String),
 }
 
 impl From<VarError> for NatsError {
@@ -67,5 +73,17 @@ impl From<async_nats::error::Error<GetStreamErrorKind>> for NatsError {
 impl From<Box<dyn StdError + std::marker::Send + std::marker::Sync>> for NatsError {
     fn from(err: Box<dyn StdError + std::marker::Send + std::marker::Sync>) -> Self {
         self::NatsError::GetConsumerError(err.to_string())
+    }
+}
+
+impl From<std::io::Error> for NatsError {
+    fn from(err: std::io::Error) -> Self {
+        self::NatsError::IoError(err.to_string())
+    }
+}
+
+impl From<serde_json::Error> for NatsError {
+    fn from(err: serde_json::Error) -> Self {
+        self::NatsError::SerializationError(err.to_string())
     }
 }
