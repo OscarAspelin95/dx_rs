@@ -1,9 +1,12 @@
+#todo-upper{
+    min-width: 500px;
+}
+
 #todo-container{
     display: flex;
     flex-direction: column;
     justify-content: space-around;
     align-items: center;
-
 }
 
 #task-container{
@@ -16,10 +19,6 @@
 #todo-header{
     color: azure;
 
-}
-
-#todo-upper{
-    width: 300px;
 }
 
 h1{
@@ -41,7 +40,7 @@ h1{
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    width: 300px;
+    min-width: 300px;
     margin-bottom: 10px;
     margin-top: 10px;
 }
@@ -51,6 +50,11 @@ h1{
     flex-direction: row;
     justify-content: center;
     align-items: center;
+    min-width: 15px;
+}
+
+#task-name-checkbox-checkbox{
+    min-width: 15px;
 }
 
 .task-name {
@@ -75,8 +79,9 @@ h1{
 #new-task-container{
     display: flex;
     flex-direction: row;
-    justify-content: center;
+    justify-content: space-around;
     align-items: center;
+    min-width: 300px;
 }
 
 #task-input{
@@ -87,4 +92,26 @@ h1{
     height: 25px;
     padding: 5px;
     color: azure;
+}
+
+#label-dropdown{
+    margin-right: 10px;
+}
+
+#label-with-remove-button-container{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 90px
+}
+
+#todo-component-separator{
+    margin-top: 10px;
+    margin-bottom: 30px;
+}
+
+
+#task-label-span{
+    color: #232323;
 }

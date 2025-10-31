@@ -4,19 +4,27 @@ version = "0.1.0"
 authors = ["Oscar Aspelin <oscar.aspelin@gmail.com>"]
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+# Dioxus itself.
 dioxus = { version = "0.7.0-rc.3", features = ["router", "fullstack"] }
 dioxus-primitives = { git = "https://github.com/DioxusLabs/components", version = "0.0.1" }
 tracing = { version = "0.1", features = ["std"] }
+
+# Serialization.
 serde = {version = "1.0.228", features = ['derive']}
 serde_json = {version = "1.0.145"}
+
+# Database - probably not needed!
 surrealdb = {version = "2.3.10", optional = true}
+
+# Async + requests
 tokio = {version = "*", features = ["full"], optional = true}
 reqwest = {version = "0.12.24"}
-# "js" feature required for web-assembly.
-uuid = {version = "1.18.1", features = ["v7", "js"]}
+
+# Misc
+uuid = {version = "1.18.1", features = ["v7", "js"]} # "js" feature required for web-assembly.
+strum = {version = "0.27.2", features = ["derive"]} # Enum manipulation.
 
 [features]
 default = ["desktop"]

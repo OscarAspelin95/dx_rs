@@ -1,40 +1,36 @@
 use std::time::Duration;
 
+use super::types::{Label, Status, ToDoItem};
 use crate::components::Button;
 use crate::components::Checkbox;
+use crate::components::Select;
+use crate::components::SelectItemIndicator;
+use crate::components::SelectList;
+use crate::components::SelectOption;
+use crate::components::SelectTrigger;
+use crate::components::SelectValue;
 use crate::components::Separator;
 use crate::components::ToastProvider;
 use dioxus::prelude::*;
 use dioxus_primitives::toast::{use_toast, ToastOptions};
 use reqwest;
-use serde::{Deserialize, Serialize};
 use serde_json;
+use strum::IntoEnumIterator;
 use uuid;
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
-enum Status {
-    #[serde(rename = "completed")]
-    Completed,
-    #[serde(rename = "created")]
-    Created,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-struct ToDoItem {
-    name: String,
-    status: Status,
-    uuid: String,
-}
-
-impl ToDoItem {
-    /// Can we run the db api query here?
-    fn toggle(&mut self) {
-        match self.status {
-            Status::Completed => self.status = Status::Created,
-            Status::Created => self.status = Status::Completed,
-        }
+#[component]
+fn LabelIcon(label: Label) -> Element {
+    let label_text: String = match label {
+        Label::Api => "api".into(),
+        Label::Database => "database".into(),
+        Label::Dioxus => "genetics".into(),
+        _ => "list".into(),
+    };
+    rsx! {
+        span { id: "task-label-span", class: "material-symbols-outlined", "{label_text}" }
     }
 }
+
 #[component]
 pub fn ToDoTaskList() -> Element {
     let toast_api = use_toast();
@@ -112,6 +108,7 @@ pub fn ToDoTaskList() -> Element {
 
                     div { id: "task-name-checkbox",
                         Checkbox {
+                            id: "task-name-checkbox-checkbox",
                             on_checked_change: move |_| async move {
                                 toggle_task(i).await;
                             },
@@ -121,14 +118,19 @@ pub fn ToDoTaskList() -> Element {
                         }
                     }
 
-                    Button {
-                        id: "remove-task-button",
-                        "data-style": "destructive",
-                        onclick: move |_| async move {
-                            remove_task(i).await;
-                        },
-                        "X"
+                    div { id: "label-with-remove-button-container",
+                        LabelIcon { label: Label::Database }
+                        Button {
+                            id: "remove-task-button",
+                            "data-style": "destructive",
+                            onclick: move |_| async move {
+                                remove_task(i).await;
+                            },
+                            "X"
+                        }
                     }
+
+
                 }
                 Separator {}
             })}
@@ -158,6 +160,7 @@ pub fn NewTask() -> Element {
         let new_task = ToDoItem {
             name: task_name.read().clone(),
             status: Status::Created,
+            label: None,
             uuid: uuid::Uuid::now_v7().to_string(),
         };
 
@@ -192,6 +195,15 @@ pub fn NewTask() -> Element {
         task_name.write().clear();
     };
 
+    let labels = Label::iter().enumerate().map(|(i, label)| {
+        rsx! {
+            SelectOption::<Option<Label>> { index: i, value: label, text_value: "{label}",
+                {label.to_string()}
+                SelectItemIndicator {}
+            }
+        }
+    });
+
     rsx! {
         div { id: "new-task-container",
             input {
@@ -202,15 +214,21 @@ pub fn NewTask() -> Element {
                     task_name.set(text);
                 },
             }
+            div { id: "label-dropdown",
+                Select::<Option<Label>> { placeholder: "Label",
+                    SelectTrigger { id: "label-dropdown-trigger", width: "110px", SelectValue {} }
+                    SelectList { id: "label-dropdown-list", {labels} }
+                }
+            }
             Button {
-                id: "",
-                // Move to upstream closure
+                id: "create-new-task-button",
                 onclick: move |_| async move {
                     create_new_task(task_name).await;
                 },
                 "Add"
             }
         }
+        Separator { id: "todo-component-separator" }
     }
 }
 
