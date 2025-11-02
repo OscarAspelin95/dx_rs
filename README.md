@@ -4,6 +4,8 @@ The Rust programming language is really coming along with respect to fullstack d
 # Current State
 The Dioxus frontend currently is lagging behind, partially because of awaiting the official Dioxus 0.7.0 release and partially because a lot of focus has been directed towards the API, MinIO and NATS.
 
+*Update* - It seems like there are still wasm-bindgen issues, even with the release of Dioxus 0.7.0.
+
 # Features
 - ✅ Todo list Dioxus component (only for testing purposes).
 - 🚧 Fastq parser
