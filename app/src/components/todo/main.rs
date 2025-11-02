@@ -18,14 +18,16 @@ use serde_json;
 use strum::IntoEnumIterator;
 use uuid;
 
+/// We can improve this with something like
+/// a impl function for converting a label to google font name.
 #[component]
-fn LabelIcon(label: Label) -> Element {
-    let label_text: String = match label {
+fn LabelIcon(label: Option<Label>) -> Element {
+    let label_text: String = label.map_or("question_mark".into(), |l| match l {
         Label::Api => "api".into(),
         Label::Database => "database".into(),
         Label::Dioxus => "genetics".into(),
-        _ => "list".into(),
-    };
+    });
+
     rsx! {
         span { id: "task-label-span", class: "material-symbols-outlined", "{label_text}" }
     }
@@ -119,7 +121,7 @@ pub fn ToDoTaskList() -> Element {
                     }
 
                     div { id: "label-with-remove-button-container",
-                        LabelIcon { label: Label::Database }
+                        LabelIcon { label: task.label }
                         Button {
                             id: "remove-task-button",
                             "data-style": "destructive",
@@ -142,6 +144,7 @@ pub fn ToDoTaskList() -> Element {
 pub fn NewTask() -> Element {
     let toast_api = use_toast();
     let mut task_name = use_signal::<String>(|| String::new());
+    let mut task_label = use_signal::<Option<Label>>(|| None);
     let mut tasks = consume_context::<Signal<Vec<ToDoItem>>>();
 
     let create_new_task = move |mut task_name: Signal<String>| async move {
@@ -160,7 +163,7 @@ pub fn NewTask() -> Element {
         let new_task = ToDoItem {
             name: task_name.read().clone(),
             status: Status::Created,
-            label: None,
+            label: task_label.read().clone(),
             uuid: uuid::Uuid::now_v7().to_string(),
         };
 
@@ -193,6 +196,7 @@ pub fn NewTask() -> Element {
 
         // Clear on success.
         task_name.write().clear();
+        task_label.set(None);
     };
 
     let labels = Label::iter().enumerate().map(|(i, label)| {
@@ -209,13 +213,24 @@ pub fn NewTask() -> Element {
             input {
                 id: "task-input",
                 placeholder: "...",
+                // Ideally, we want to clear the input itself.
+                // Not sure what is the best way though...
                 onchange: move |evt| {
                     let text: String = evt.parsed().unwrap();
                     task_name.set(text);
                 },
             }
             div { id: "label-dropdown",
-                Select::<Option<Label>> { placeholder: "Label",
+                Select::<Option::<Label>> {
+                    on_value_change: move |label: Option<Option<Label>>| {
+                        match label {
+                            Some(optional_label) => {
+                                task_label.set(optional_label);
+                            }
+                            None => {}
+                        }
+                    },
+                    placeholder: "Label",
                     SelectTrigger { id: "label-dropdown-trigger", width: "110px", SelectValue {} }
                     SelectList { id: "label-dropdown-list", {labels} }
                 }

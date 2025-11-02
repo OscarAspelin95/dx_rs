@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 # Dioxus itself.
-dioxus = { version = "0.7.0-rc.3", features = ["router", "fullstack"] }
+dioxus = { version = "0.7.0", features = ["router", "fullstack"] }
 dioxus-primitives = { git = "https://github.com/DioxusLabs/components", version = "0.0.1" }
 tracing = { version = "0.1", features = ["std"] }
 
@@ -20,7 +20,7 @@ surrealdb = {version = "2.3.10", optional = true}
 
 # Async + requests
 tokio = {version = "*", features = ["full"], optional = true}
-reqwest = {version = "0.12.24"}
+reqwest = {version = "0.12.24", features = ["json", "stream", "multipart"]}
 
 # Misc
 uuid = {version = "1.18.1", features = ["v7", "js"]} # "js" feature required for web-assembly.

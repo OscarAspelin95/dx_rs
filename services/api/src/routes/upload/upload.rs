@@ -45,6 +45,7 @@ pub async fn upload_file(
                 url = Some(upload_field.url.clone());
 
                 // Write url to database.
+
                 let response: Option<UploadField> =
                     db.create("file_upload").content(upload_field).await?;
 

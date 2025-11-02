@@ -8,7 +8,7 @@ use dioxus::prelude::*;
 use dioxus_primitives::toast::use_toast;
 use dioxus_primitives::toast::ToastOptions;
 
-use reqwest;
+use reqwest::multipart::{Form, Part};
 
 use std::path::PathBuf;
 use std::time::Duration;
@@ -25,6 +25,14 @@ struct UploadedFile {
     name: PathBuf,
 }
 
+/// The main issue here is the discrepancy between dx serve --desktop
+/// and dx serve --web. In desktop mode, we have access to the file system,
+/// file paths, etc. In web (browser) mode we only have access to browser specific
+/// attributes:
+/// * In desktop mode we only have to save the file path itself.
+/// * For web mode, we need to store either the file contents (bytes) OR
+///     we try to save the FileData object. Since we want to support
+///     upload of multiple, large files - saving file contents is not feasible.
 #[component]
 pub fn FileInput() -> Element {
     let mut uploaded_files = consume_context::<UploadedFileContext>().uploaded_files;
@@ -116,6 +124,7 @@ pub fn FileList() -> Element {
     }
 }
 
+/// TODO - add progress spinner/loader.
 #[component]
 pub fn UploadButton() -> Element {
     let mut uploaded_files = consume_context::<UploadedFileContext>().uploaded_files;
@@ -128,15 +137,12 @@ pub fn UploadButton() -> Element {
         let files = uploaded_files.read().clone();
         // We might want to spawn separate background processes here...
         for file in files {
-            let fname = file.name.clone();
-            // There has to be a better way...
-            // let fname = fname.file_name().unwrap().to_str().unwrap().to_string();
+            // This is the main issue in desktop vs web. For web, we need to access
+            // the actual file contents, not only the file name/path.
 
-            // Multipart form.
-            let payload = reqwest::multipart::Form::new()
-                .file("file", file.name)
-                .await
-                .expect("Failed to generate multipart form.");
+            // This works only in desktop mode.
+            let part = Part::file(file.name).await.expect("bla");
+            let payload = Form::new().part("file", part);
 
             // Actual upload.
             let response = client
@@ -153,9 +159,10 @@ pub fn UploadButton() -> Element {
                     error!("{:?}", e)
                 }
             }
-
-            //
         }
+
+        // We need some condition to check if
+        // All files were uploaded successfully.
 
         // Upload success.
         toast_api.success(
@@ -165,15 +172,10 @@ pub fn UploadButton() -> Element {
                 .permanent(false),
         );
 
-        // No processing yet.
-        toast_api.warning(
-            "File processing not implemented yet...".to_string(),
-            ToastOptions::new()
-                .duration(Duration::from_secs(3))
-                .permanent(false),
-        );
-
         // Remove locally chosen files.
+        // NOTE - here, we should change to only
+        // remove files that were successfully uploaded.
+        // I.e., Keep files that failed to upload.
         uploaded_files.write().clear();
     };
 

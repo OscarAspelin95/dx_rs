@@ -17,6 +17,7 @@ pub enum Status {
 #[derive(Serialize, Debug, Deserialize, Clone)]
 pub struct ToDoItem {
     pub name: String,
+    pub label: String, // NOTE - this should match frontend (currently, does not).
     pub status: Status,
     pub uuid: String,
 }
