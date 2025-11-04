@@ -9,3 +9,6 @@ pub mod nats;
 
 #[cfg(feature = "utils")]
 pub mod utils;
+
+#[cfg(feature = "schema")]
+pub mod schema;

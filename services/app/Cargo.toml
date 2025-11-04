@@ -5,7 +5,7 @@ authors = ["Oscar Aspelin <oscar.aspelin@gmail.com>"]
 edition = "2021"
 
 [dependencies]
-shared = {path = "../shared", features = ["utils"]}
+shared = {path = "../shared", features = ["utils", "schema"]}
 
 # Dioxus itself.
 dioxus = { version = "0.7.0", features = ["router", "fullstack"] }

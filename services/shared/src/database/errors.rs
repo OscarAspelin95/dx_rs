@@ -17,6 +17,9 @@ pub enum DatabaseError {
 
     #[error("Database is unhealthy")]
     DatabaseUnhealthyError(String),
+
+    #[error("Failed to convert from String ID to SurrealDB ID.")]
+    RecordIdConversionError,
 }
 
 impl From<VarError> for DatabaseError {

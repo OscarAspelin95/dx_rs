@@ -7,9 +7,10 @@ edition = "2024"
 [features]
 default = []
 utils = ["dep:chrono", "dep:regex"]
-database = ["utils", "dep:log", "dep:surrealdb", "dep:thiserror", "dep:tokio"]
+database = ["utils", "schema", "dep:log", "dep:surrealdb", "dep:thiserror", "dep:tokio"]
 minio = ["utils", "dep:minio", "dep:log", "dep:thiserror", "dep:bytes"]
 nats = ["utils", "dep:thiserror", "dep:async-nats", "dep:log", "dep:serde", "dep:serde_json"]
+schema = ["dep:serde"]
 
 [dependencies]
 surrealdb = { workspace = true, optional = true}
