@@ -1,0 +1,82 @@
+#home-main{
+    display: flex;
+    flex-direction: row;
+    align-items:center;
+    justify-content:center;
+    height: 700px;
+}
+
+#logo-crop{
+    height: 150px
+}
+
+#logo-separator{
+    background-color: rgb(48, 48, 48);
+    width: 150px;
+    height: 1px;
+    margin: 30px;
+}
+
+#home-btn{
+    background-color: rgb(28, 28, 28);
+    color: rgb(182, 182, 182);
+    height: 40px;
+
+    &:hover{
+        background-color: oklch(70.5% 0.213 47.604);
+        color: black;
+    }
+}
+
+
+#logo-with-separator{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+#home-action{
+    display: flex;
+    flex-direction: row;
+    justify-content:space-between;
+    align-items: center;
+    border: 1px solid rgb(16, 16, 16);
+    border-radius: 9px;
+    padding: 15px;
+    width: 140px;
+
+    &:hover{
+        background-color: oklch(70.5% 0.213 47.604);
+        animation: pulse-bg 2s ease-in-out infinite;
+    }
+}
+
+#home-action-span{
+    font-size:x-large;
+    color: rgb(60, 60, 60);
+
+
+}
+
+#home-action-logo{
+    font-size: xx-large;
+    color:rgb(60, 60, 60)
+}
+
+#home-action:hover #home-action-span,
+#home-action:hover #home-action-logo {
+    color: rgb(17, 17, 17);
+}
+
+@keyframes pulse-bg {
+    0% {
+        background-color: oklch(70.5% 0.213 47.604);
+    }
+    50% {
+        background-color: oklch(57.792% 0.15967 47.058);
+    }
+    100% {
+        background-color: oklch(70.5% 0.213 47.604);
+    }
+}

@@ -1,8 +1,5 @@
-mod test_toast;
-pub use test_toast::TestToast;
-
-mod echo;
-pub use echo::Echo;
+mod home;
+pub use home::HomeMain;
 
 mod primitives;
 pub use primitives::*;

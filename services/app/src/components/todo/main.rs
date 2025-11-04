@@ -18,6 +18,8 @@ use serde_json;
 use strum::IntoEnumIterator;
 use uuid;
 
+const TODO_CSS: Asset = asset!("./style.css");
+
 /// We can improve this with something like
 /// a impl function for converting a label to google font name.
 #[component]
@@ -330,6 +332,7 @@ pub fn ToDoList() -> Element {
     });
 
     rsx! {
+        document::Link { rel: "stylesheet", href: TODO_CSS }
         ToastProvider {
             div { id: "todo-upper",
                 h1 { id: "todo-title", "ToDo List" }

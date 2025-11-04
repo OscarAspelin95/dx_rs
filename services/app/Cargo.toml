@@ -22,7 +22,7 @@ reqwest = {version = "0.12.24", features = ["json", "stream", "multipart"]}
 
 # Misc
 uuid = {version = "1.18.1", features = ["v7", "js"]} # "js" feature required for web-assembly.
-strum = {version = "0.27.2", features = ["derive"]} # Enum manipulation.
+strum = {workspace = true} # Enum manipulation.
 
 [features]
 default = ["desktop"]
