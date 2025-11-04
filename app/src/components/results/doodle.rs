@@ -29,30 +29,31 @@ fn SortableTable() -> Element {
                 caption { "{c}" }
             }
 
-            thead { id: "table-header",
-                tr { id: "table-header-row",
-                    {
-                        table_props
-                            .read()
-                            .table_headers
-                            .iter()
-                            .enumerate()
-                            .map(|(i, h)| rsx! {
-                                th { id: "table-header-row-item", onclick: move |_| async move {}, "{h}" }
-                            })
-                    }
-                }
-            }
+        // thead { id: "table-header",
+        //     tr { id: "table-header-row",
+        //         {
+        //             table_props
+        //                 .read()
+        //                 .table_headers
+        //                 .iter()
+        //                 .enumerate()
+        //                 .map(|(i, h)| rsx! {
+        //                     th { id: "table-header-row-item", onclick: move |_| async move {}, "{h}" }
+        //                 })
+        //         }
+        //     }
+        // }
 
-            tbody { id: "table-body",
-                {table_props.read().table_rows.iter().map(|r| rsx! {
-                    tr { id: "table-body-row",
-                        {r.iter().map(|row_row| rsx! {
-                            td { id: "table-body-row-item", {format!("{:?}", row_row)} }
-                        })}
-                    }
-                })}
-            }
+        //     tbody { id: "table-body",
+        //         {table_props.read().table_rows.iter().map(|r| rsx! {
+        //             tr { id: "table-body-row",
+        //                 {r.iter().map(|row_row| rsx! {
+        //                     td { id: "table-body-row-item", {format!("{:?}", row_row)} }
+        //                 })}
+        //             }
+        //         })}
+        //     }
+        // }
         }
     }
 }
