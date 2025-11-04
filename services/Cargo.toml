@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["api", "fastq_service", "shared"]
+members = ["app", "api", "fastq_service", "shared"]
 
 [workspace.dependencies]
 # Database

@@ -3,29 +3,37 @@ name = "shared"
 version = "0.1.0"
 edition = "2024"
 
+
+[features]
+default = []
+utils = ["dep:chrono", "dep:regex"]
+database = ["utils", "dep:log", "dep:surrealdb", "dep:thiserror", "dep:tokio"]
+minio = ["utils", "dep:minio", "dep:log", "dep:thiserror", "dep:bytes"]
+nats = ["utils", "dep:thiserror", "dep:async-nats", "dep:log", "dep:serde", "dep:serde_json"]
+
 [dependencies]
-surrealdb = { workspace = true}
+surrealdb = { workspace = true, optional = true}
 
 # Async
-futures = {workspace=true}
-tokio = {workspace = true}
+futures = {workspace=true, optional = true}
+tokio = {workspace = true, optional = true}
 
 # Connections
-async-nats = {workspace=true}
-minio = {workspace=true}
+async-nats = {workspace=true, optional=true}
+minio = {workspace=true, optional=true}
 
 # Serializing.
-serde = {workspace = true}
-serde_json = {workspace=true}
+serde = {workspace = true, optional=true}
+serde_json = {workspace=true, optional = true}
 
 # Logging.
-log = {workspace=true}
-simple_logger = {workspace=true}
+log = {workspace=true, optional = true}
+simple_logger = {workspace=true, optional = true}
 
 # Error handling.
-thiserror = {workspace=true}
+thiserror = {workspace=true, optional = true}
 
 # Misc.
-regex = {workspace=true}
-chrono = {workspace = true}
-bytes = {workspace = true}
+regex = {workspace=true, optional = true}
+chrono = {workspace = true, optional = true}
+bytes = {workspace = true, optional = true}

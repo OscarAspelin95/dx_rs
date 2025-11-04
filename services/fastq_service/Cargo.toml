@@ -6,7 +6,7 @@ edition = "2024"
 [dependencies]
 # Package specifics
 fastq_rs = {version = "*"}
-shared = {path = "../shared"}
+shared = {path = "../shared", features = ["database", "nats", "minio"]}
 
 # We probably should remove this later on
 # and have a separate NATS consumer for all db writes.

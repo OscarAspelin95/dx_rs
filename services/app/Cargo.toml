@@ -1,25 +1,23 @@
 [package]
-name = "dx_rs"
+name = "app"
 version = "0.1.0"
 authors = ["Oscar Aspelin <oscar.aspelin@gmail.com>"]
 edition = "2021"
 
-
 [dependencies]
+shared = {path = "../shared", features = ["utils"]}
+
 # Dioxus itself.
 dioxus = { version = "0.7.0", features = ["router", "fullstack"] }
 dioxus-primitives = { git = "https://github.com/DioxusLabs/components", version = "0.0.1" }
 tracing = { version = "0.1", features = ["std"] }
 
 # Serialization.
-serde = {version = "1.0.228", features = ['derive']}
-serde_json = {version = "1.0.145"}
-
-# Database - probably not needed!
-surrealdb = {version = "2.3.10", optional = true}
+serde = {workspace = true}
+serde_json = {workspace = true}
 
 # Async + requests
-tokio = {version = "*", features = ["full"], optional = true}
+tokio = {workspace = true, optional = true}
 reqwest = {version = "0.12.24", features = ["json", "stream", "multipart"]}
 
 # Misc
@@ -31,5 +29,4 @@ default = ["desktop"]
 web = ["dioxus/web"]
 desktop = ["dioxus/desktop"]
 mobile = ["dioxus/mobile"]
-# NOTE - surrealdb might not be required since we are only using reqwest.
-server = ["dioxus/server", "dep:surrealdb", "dep:tokio"]
+server = ["dioxus/server", "dep:tokio"]

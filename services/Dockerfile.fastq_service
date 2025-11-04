@@ -10,6 +10,9 @@ COPY ./Cargo.lock .
 # Copy the packages we need.
 COPY ./api ./api
 COPY ./fastq_service ./fastq_service
+##
+COPY ./app/Cargo.toml ./app/Cargo.toml
+COPY ./app/src/main.rs ./app/src/main.rs
 COPY ./shared ./shared
 
 RUN cargo build --release -p fastq_service && mv ./target/release/fastq_service /usr/local/bin/fastq_service
