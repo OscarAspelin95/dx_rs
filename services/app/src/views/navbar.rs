@@ -1,8 +1,9 @@
-use crate::components::{Navbar, NavbarItem, Separator};
+use crate::components::{Navbar, NavbarContent, NavbarItem, NavbarNav, NavbarTrigger, Separator};
 use crate::Route;
 use dioxus::prelude::*;
 
 const NAVBAR_CSS: Asset = asset!("/assets/styling/navbar.css");
+const BINARY: Asset = asset!("/assets/icons/binary.svg");
 
 #[component]
 fn NavBarSeparator() -> Element {
@@ -35,12 +36,38 @@ pub fn MainNavBar() -> Element {
                     "Blog"
                 }
                 NavBarSeparator {}
-                NavbarItem {
-                    id: "navbar-item",
-                    index: 2usize,
-                    value: "upload".to_string(),
-                    to: Route::Upload {},
-                    "Upload"
+                NavbarNav { id: "navbar-nav", index: 2usize,
+                    NavbarTrigger { id: "navbar-trigger", "Upload" }
+                    NavbarContent { id: "navbar-content",
+                        NavbarItem {
+                            index: 0usize,
+                            value: "fastq".to_string(),
+                            to: Route::Upload {},
+                            div { id: "navchoice",
+                                "Fastq"
+                                img { id: "binary-file", src: BINARY }
+                            }
+                        }
+                        NavbarItem {
+                            index: 1usize,
+                            value: "fasta".to_string(),
+                            to: Route::Upload {},
+                            div { id: "navchoice",
+                                "Fasta"
+                                span { class: "material-symbols-outlined", "text_snippet" }
+                            }
+                        }
+                        NavbarItem {
+                            index: 2usize,
+                            value: "database".to_string(),
+                            to: Route::Upload {},
+                            div { id: "navchoice",
+                                "Database"
+                                span { class: "material-symbols-outlined", "storage" }
+                            }
+                        }
+
+                    }
                 }
                 NavBarSeparator {}
                 NavbarItem {

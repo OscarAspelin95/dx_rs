@@ -1,4 +1,5 @@
 use crate::components::Separator;
+use crate::route::Route;
 use dioxus::prelude::*;
 
 const HOME_CSS: Asset = asset!("./style.css");
@@ -11,12 +12,15 @@ pub fn HomeMain() -> Element {
         div { id: "home-main",
 
             div { id: "home-action",
-                span { id: "home-action-span", "Upload" }
-                span {
-                    id: "home-action-logo",
-                    class: "material-symbols-outlined",
-                    "cloud_upload"
+                Link { id: "home-link", to: Route::Upload {},
+                    span { id: "home-action-span", "Upload" }
+                    span {
+                        id: "home-action-logo",
+                        class: "material-symbols-outlined",
+                        "cloud_upload"
+                    }
                 }
+
             }
 
             div { id: "logo-with-separator",
@@ -27,11 +31,14 @@ pub fn HomeMain() -> Element {
 
 
             div { id: "home-action",
-                span { id: "home-action-span", "Results" }
-                span {
-                    id: "home-action-logo",
-                    class: "material-symbols-outlined",
-                    "list"
+                Link { id: "home-link", to: Route::Results {},
+
+                    span { id: "home-action-span", "Results" }
+                    span {
+                        id: "home-action-logo",
+                        class: "material-symbols-outlined",
+                        "list"
+                    }
                 }
             }
 

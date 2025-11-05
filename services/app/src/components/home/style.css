@@ -37,10 +37,6 @@
 }
 
 #home-action{
-    display: flex;
-    flex-direction: row;
-    justify-content:space-between;
-    align-items: center;
     border: 1px solid rgb(16, 16, 16);
     border-radius: 9px;
     padding: 15px;
@@ -55,8 +51,6 @@
 #home-action-span{
     font-size:x-large;
     color: rgb(60, 60, 60);
-
-
 }
 
 #home-action-logo{
@@ -67,6 +61,14 @@
 #home-action:hover #home-action-span,
 #home-action:hover #home-action-logo {
     color: rgb(17, 17, 17);
+}
+
+#home-link{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    text-decoration: none;
 }
 
 @keyframes pulse-bg {

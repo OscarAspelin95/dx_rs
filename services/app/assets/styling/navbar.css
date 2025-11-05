@@ -1,4 +1,5 @@
-#navbar-item{
+#navbar-item,
+#navbar-trigger{
     font-size: 1.4em;
     font-weight: 400;
     color: rgb(88, 88, 88);
@@ -14,6 +15,7 @@
     justify-content: center;
     align-items: center;
 }
+
 #navbar-separator{
     width: 2px;
     height: 20px;
@@ -23,4 +25,32 @@
         transition: 300ms ease-in-out;
 
     }
+}
+
+/* Arrow next to navbar dropdowns.*/
+.navbar-expand-icon{
+    margin-left: 4px;
+}
+
+.navbar-expand-icon polyline {
+  stroke: oklch(70.5% 0.213 47.604);
+  stroke-width: 2;
+}
+
+#navbar-content{
+    background-color: rgb(17, 17, 17);
+}
+
+#navchoice{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+
+}
+
+#binary-file{
+    background-color: rgb(204, 204, 204);
+    border-radius: 2px;
+    height: 20px;
 }
