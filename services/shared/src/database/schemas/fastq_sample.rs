@@ -13,7 +13,7 @@ pub struct FastqSampleConfig {
 }
 
 impl FastqSampleConfig {
-    fn mock() -> Self {
+    pub fn mock() -> Self {
         Self {
             min_len: 200,
             max_len: None,
@@ -34,7 +34,7 @@ pub struct FastqSampleData {
 }
 
 impl FastqSampleData {
-    fn mock() -> Self {
+    pub fn mock() -> Self {
         Self {
             name: "sample_name".into(),
             status: Status::Created,

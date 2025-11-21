@@ -24,3 +24,7 @@ script = []
 [bundle]
 identifier = "Oscar Aspelin"
 publisher = "Oscar Aspelin"
+copyright = "Copyright 2025"
+short_description = "Fullstack Rust Application"
+long_description = "Fullstack Rust Application"
+icon = ["assets/icon/16x16.png", "assets/icon/512x512.png"]

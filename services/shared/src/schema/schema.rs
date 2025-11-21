@@ -26,10 +26,10 @@ pub enum Status {
 )]
 pub enum Pipeline {
     #[serde(rename = "wgs_single_isolate")]
-    #[strum(serialize = "Wgs Single Isolate")]
+    #[strum(serialize = "WGS Single Isolate")]
     WgsSingleIsolate,
     #[serde(rename = "wgs_metagenome")]
-    #[strum(serialize = "Wgs Metagenome")]
+    #[strum(serialize = "WGS Metagenome")]
     WgsMetagenome,
     #[serde(rename = "amplicon_metagenome")]
     #[strum(serialize = "Amplicon Metagenome")]

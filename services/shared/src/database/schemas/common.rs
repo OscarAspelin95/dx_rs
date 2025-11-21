@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use surrealdb::RecordId;
-use surrealdb::sql::Thing;
+use surrealdb::sql::{Id, Thing};
 
 use crate::database::DatabaseError;
 
@@ -20,11 +20,7 @@ impl SimpleRecordId {
     }
 
     pub fn surrealdb_id(&self) -> Result<Thing, DatabaseError> {
-        let surrealdb_id = self
-            .formatted_id()
-            .parse::<Thing>()
-            .map_err(|_| DatabaseError::RecordIdConversionError)?;
-
+        let surrealdb_id = Thing::from((self.table_name.clone(), Id::from(self.record_id.clone())));
         Ok(surrealdb_id)
     }
 }

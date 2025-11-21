@@ -35,6 +35,7 @@ fn app(state: ConnectionState) -> Router {
 #[tokio::main]
 async fn main() -> Result<(), ApiError> {
     SimpleLogger::new()
+        .with_level(log::LevelFilter::Info)
         .init()
         .expect("Failed to initialize simple logger.");
 

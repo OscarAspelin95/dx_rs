@@ -1,5 +1,9 @@
+use std::io::BufReader;
+use std::path::PathBuf;
+
 use serde::{Deserialize, Serialize};
 
+use crate::database::DatabaseError;
 use crate::database::schemas::common::SimpleRecordId;
 use crate::utils::time::time_now;
 
@@ -30,6 +34,19 @@ impl FastqMetrics {
     }
 }
 
+impl FastqMetrics {
+    pub fn from_json(json: PathBuf) -> Result<Self, DatabaseError> {
+        let f = std::fs::File::open(json)
+            .map_err(|err| DatabaseError::UnknownError(err.to_string()))?;
+
+        let bufread = BufReader::new(f);
+        let s: FastqMetrics = serde_json::from_reader(bufread)
+            .map_err(|err| DatabaseError::UnknownError(err.to_string()))?;
+
+        Ok(s)
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FastqPreprocessResult {
     pub metrics_raw: FastqMetrics,
@@ -37,7 +54,7 @@ pub struct FastqPreprocessResult {
 }
 
 impl FastqPreprocessResult {
-    fn mock() -> Self {
+    pub fn mock() -> Self {
         Self {
             metrics_raw: FastqMetrics::mock(),
             metrics_filtered: FastqMetrics::mock(),
@@ -58,7 +75,7 @@ pub struct FastqPreprocessData {
 }
 
 impl FastqPreprocessData {
-    fn mock() -> Self {
+    pub fn mock() -> Self {
         Self {
             status: Status::Created,
             url: "http://minio:9000/bucket/preprocessed_key".into(),

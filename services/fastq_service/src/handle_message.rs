@@ -6,9 +6,9 @@ use crate::config::FilterConfig;
 use fastq_rs::{filter::fastq_filter, stats::fastq_stats};
 use log::info;
 use minio::s3::Client;
+use shared::database::schemas::fastq_preprocess::{FastqMetrics, FastqPreprocessResult};
 use shared::file_path;
 use shared::minio::minio_upload_file;
-use shared::nats::schema::fastq_service::{FastqMetrics, FastqStats};
 use shared::utils::file::file_name;
 
 fn fastq_rs_filter(fastq: &Path, outfile: &PathBuf) -> Result<(), FastqError> {
@@ -48,7 +48,7 @@ fn fastq_rs_stats(fastq: &Path, outfile: PathBuf) -> Result<(), FastqError> {
 pub async fn handle_message(
     fastq: &Path,
     minio_client: &Client,
-) -> Result<(FastqMetrics, u64, String), FastqError> {
+) -> Result<(FastqPreprocessResult, usize, String), FastqError> {
     let start = time::Instant::now();
 
     // Stats for raw fastq.
@@ -75,10 +75,10 @@ pub async fn handle_message(
         minio_upload_file(minio_client, "file-upload-processed", &key, filtered_fastq).await?;
 
     // Construct FastqResponse
-    let fastq_metrics = FastqMetrics {
-        metrics_raw: FastqStats::from_json(json_raw)?,
-        metrics_filtered: FastqStats::from_json(json_trimmed)?,
+    let fastq_preprocess_result = FastqPreprocessResult {
+        metrics_raw: FastqMetrics::from_json(json_raw)?,
+        metrics_filtered: FastqMetrics::from_json(json_trimmed)?,
     };
 
-    Ok((fastq_metrics, elapsed, minio_url))
+    Ok((fastq_preprocess_result, elapsed as usize, minio_url))
 }

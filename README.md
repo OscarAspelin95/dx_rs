@@ -6,6 +6,14 @@ The Dioxus frontend currently is lagging behind, partially because of awaiting t
 
 *Update* - It seems like there are still wasm-bindgen issues, even with the release of Dioxus 0.7.0.
 
+## Updates
+- Refactoring has been prioritized. Specifically:
+    - Moving Dioxus app to a workspace package, enabling accessing shared code.
+    - Rust workspace has been feature gated to avoid unecessary crates and compilation.
+    - Lots of package-specific code has been moved to the shared package.
+
+- Understanding relations between SurrealDB tables and records has taken a lot of time, especially with multi-step relations such as `user->uploaded->file->was_processed->file_process_result->run_in_service->service_result`.
+
 # Features
 - ✅ Todo list Dioxus component (only for testing purposes).
 - 🚧 Fastq parser
@@ -15,18 +23,20 @@ The Dioxus frontend currently is lagging behind, partially because of awaiting t
     - ✅ NATS messaging to service.
     - ✅ NATS messaging receival in service.
     - ✅ Fastq processing.
-    - 🚧 Database write.
+    - ✅ Database write.
     - 🚧 Frontend component.
 - 🚧 Login with Google Account
     - ✅ Api endpoints.
     - ✅ Oauth functionality.
     - 🚧 Frontend login.
 - 🚧 Opentelemetry
+- 🚧 Prometheus
+- 🚧 Grafana
 
 # Requirements
 The application has been tested with the following versions:
 - Rust `>= 1.90`.
-- Dioxus CLI `0.7.0-rc.3`.
+- Dioxus CLI `0.7.0`.
 - Ubuntu `24.04.3`.
 - Docker `28.4.0`
 - Docker Compose `2.39.2`
@@ -36,25 +46,28 @@ The application has been tested with the following versions:
 Install via [Rustup](https://rustup.rs/). Optionally, run `rustup update` to get the latest Rust version.
 
 ## Dioxus CLI
-Run `cargo install dioxus-cli --version 0.7.0-rc.3`. Alternatively, run `cargo binstall dioxus-cli@0.7.0-rc.3 --force` (requires `binstall`).
+Run `cargo install dioxus-cli --version 0.7.0`. Alternatively, run `cargo binstall dioxus-cli@0.7.0 --force` (requires `binstall`).
 
 ## Docker Engine
 Getting Docker Engine is a bit tricky to get working, but following the official [Docker manual](https://docs.docker.com/engine/install/) should work.
 
-# How to use
-1. Run `make` to start docker instances. NOTE - this will take a while.
-2. `cd app`.
-3. `dx serve --desktop`. NOTE - this will take a while.
+# Usage
+1. Run `make` to start docker instances.
+2. `cd services/app`.
+3.
+    - (development) - `dx serve --desktop`
+    - (bundle) - `make bundle-linux` or `make bundle-desktop`
 
 NOTE - due to issues related to dioxus rc-* versions, running `--web` does not currently work.
 
 ## Project structure
 ```text
-"app/"      -   Dioxus frontend App.
+"assets/"   -   General assets files.
 "compose/"  -   Docker compose files.
 "data/"     -   Volume mounted storage for minio, nats and surrealdb.
 "services/" -   Rust (workspace) services:
     "api/"              -   API (axum).
+    "app/"              -   Dioxus frontend App.
     "fastq_service/"    -   Fastq processing.
     "shared/"           -   Code shared by services.
 ```

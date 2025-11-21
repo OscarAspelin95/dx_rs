@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install -y \
 
 RUN cargo chef cook --release --recipe-path recipe.json
 COPY . .
-RUN cargo install dioxus-cli --version 0.7.0
+RUN cargo install dioxus-cli --version 0.7.1
 RUN dx bundle --web
 
 FROM chef AS runtime

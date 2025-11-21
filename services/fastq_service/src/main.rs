@@ -4,12 +4,12 @@ use async_nats::jetstream::AckKind;
 use futures::StreamExt;
 use log::{error, info};
 use shared::database::connect_db;
+use shared::nats::schema::fastq_service::FastqMessage;
 use simple_logger::SimpleLogger;
 use tokio;
 
 use shared::minio::{connect_minio, minio_download};
 use shared::nats::connect_nats;
-use shared::nats::schema::fastq_service::{FastqMessage, FastqResponse};
 use shared::nats::streams::{config::StreamType, stream::get_consumer_from_stream_type};
 
 mod handle_message;
@@ -26,7 +26,9 @@ mod errors;
 #[tokio::main]
 async fn main() -> Result<(), FastqError> {
     info!("Inside fastq service.");
-    SimpleLogger::new().init()?;
+    SimpleLogger::new()
+        .with_level(log::LevelFilter::Info)
+        .init()?;
 
     // Get connections and clients.
     info!("Setting up connections...");
@@ -72,17 +74,17 @@ async fn main() -> Result<(), FastqError> {
 
         // Acknowledge message...
         match handle_result {
-            Ok((fastq_metrics, runtime, url)) => {
+            Ok((fastq_preprocess_result, runtime, url)) => {
                 // Write to database.
 
-                let fastq_response = FastqResponse {
-                    metrics: fastq_metrics,
-                    runtime: runtime,
-                    url: url,
-                };
-
-                info!("{:?}", fastq_response);
-                write_to_db(fastq_response, &db).await?;
+                write_to_db(
+                    fastq_preprocess_result,
+                    url,
+                    runtime,
+                    nats_message.fastq_sample_id,
+                    &db,
+                )
+                .await?;
                 message.ack().await.expect("Failed to ack message.")
             }
             // Something
