@@ -8,9 +8,10 @@ edition = "2021"
 shared = {path = "../shared", features = ["utils", "schema"]}
 
 # Dioxus itself.
-dioxus = { version = "0.7.1", features = ["router", "fullstack"] }
+dioxus = { version = "0.7.2", features = ["router", "fullstack"] }
 dioxus-primitives = { git = "https://github.com/DioxusLabs/components", version = "0.0.1" }
 tracing = { version = "0.1", features = ["std"] }
+tracing-subscriber = { version = "0.3"}
 
 # Serialization.
 serde = {workspace = true}

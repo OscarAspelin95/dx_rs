@@ -22,39 +22,27 @@ use dioxus_primitives::toast::ToastOptions;
 
 use reqwest::multipart::{Form, Part};
 
-use std::path::PathBuf;
 use std::time::Duration;
 
-use serde::{Deserialize, Serialize};
-
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 struct UploadedFileContext {
     uploaded_files: Signal<Vec<UploadedFile>>,
 }
-// For now, we store the file name and its string contents.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+
+#[derive(Clone)]
 struct UploadedFile {
-    name: PathBuf,
+    file_data: FileData,
 }
 
-/// The main issue here is the discrepancy between dx serve --desktop
-/// and dx serve --web. In desktop mode, we have access to the file system,
-/// file paths, etc. In web (browser) mode we only have access to browser specific
-/// attributes:
-/// * In desktop mode we only have to save the file path itself.
-/// * For web mode, we need to store either the file contents (bytes) OR
-///     we try to save the FileData object. Since we want to support
-///     upload of multiple, large files - saving file contents is not feasible.
 #[component]
 pub fn FileInput() -> Element {
     let mut uploaded_files = use_context::<UploadedFileContext>().uploaded_files;
 
     let handle_chosen_files = move |files: Vec<FileData>| async move {
         for file in files {
-            // Add locally.
             uploaded_files
                 .write()
-                .push(UploadedFile { name: file.path() });
+                .push(UploadedFile { file_data: file });
         }
     };
 
@@ -85,10 +73,9 @@ pub fn DragDrop() -> Element {
 
     let handle_chosen_files = move |files: Vec<FileData>| async move {
         for file in files {
-            // Add.
             uploaded_files
                 .write()
-                .push(UploadedFile { name: file.path() });
+                .push(UploadedFile { file_data: file });
         }
     };
     rsx! {
@@ -119,7 +106,7 @@ pub fn FileList() -> Element {
                     .enumerate()
                     .map(|(i, f)| rsx! {
                         div { id: "file-list-row",
-                            span { id: "chosen-file-name-span", {format!("{}", f.name.to_str().unwrap_or("Not found"))} }
+                            span { id: "chosen-file-name-span", {f.file_data.name()} }
                             Button {
                                 id: "file-list-remove-row-button",
                                 "data-style": "destructive",
@@ -156,25 +143,29 @@ pub fn UploadButton() -> Element {
             return;
         }
 
-        // Upload to server.
         let client = reqwest::Client::new();
 
         let files = uploaded_files.read().clone();
-        // We might want to spawn separate background processes here...
         for file in files {
-            // This is the main issue in desktop vs web. For web, we need to access
-            // the actual file contents, not only the file name/path.
-            // For now, web does not work!
+            let file_bytes = match file.file_data.read_bytes().await {
+                Ok(bytes) => bytes,
+                Err(e) => {
+                    error!("Failed to read file bytes: {:?}", e);
+                    continue;
+                }
+            };
 
-            // --- Multipart parts
-            let file_part = Part::file(file.name).await.expect("Failed to read file");
+            let file_name = file.file_data.name();
+            let file_part = Part::bytes(file_bytes.to_vec())
+                .file_name(file_name)
+                .mime_str("application/octet-stream")
+                .expect("Failed to set MIME type");
             let pipeline_part = Part::text(chosen_pipeline.read().as_ref().unwrap().to_string());
 
             let payload = Form::new()
                 .part("file", file_part)
                 .part("pipeline", pipeline_part);
 
-            // Actual upload.
             let response = client
                 .post("http://localhost:8001/upload")
                 .multipart(payload)
