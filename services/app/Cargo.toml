@@ -22,12 +22,21 @@ tokio = {workspace = true, optional = true}
 reqwest = {version = "0.12.24", features = ["json", "stream", "multipart"]}
 
 # Misc
-uuid = {version = "1.18.1", features = ["v7", "js"]} # "js" feature required for web-assembly.
-strum = {workspace = true} # Enum manipulation.
+uuid = {version = "1.18.1", features = ["v7", "js"]}
+strum = {workspace = true}
+dotenv = {version = "*"}
+
+# Auth (server-side only)
+oauth2 = { version = "4.4", optional = true }
+jsonwebtoken = { version = "9", optional = true }
+surrealdb = { workspace = true, optional = true }
+
+# Web-specific (for localStorage access)
+web-sys = { version = "0.3", features = ["Window", "Storage"], optional = true }
 
 [features]
 default = ["desktop"]
-web = ["dioxus/web"]
+web = ["dioxus/web", "dep:web-sys"]
 desktop = ["dioxus/desktop"]
 mobile = ["dioxus/mobile"]
-server = ["dioxus/server", "dep:tokio"]
+server = ["dioxus/server", "dep:tokio", "dep:oauth2", "dep:jsonwebtoken", "dep:surrealdb"]

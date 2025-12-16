@@ -21,7 +21,7 @@ use shared::nats::connect_nats;
 
 use tower_http::cors::{Any, CorsLayer};
 
-use crate::state::{Environment, MinIO, Nats, SurrealDB};
+use crate::state::{MinIO, Nats, SurrealDB};
 
 fn app(state: ConnectionState) -> Router {
     let cors = CorsLayer::new()
@@ -47,12 +47,6 @@ async fn main() -> Result<(), ApiError> {
         surrealdb: SurrealDB { client: db },
         minio: MinIO { client: minio },
         nats: Nats { client: nats },
-        environment: Environment {
-            google_client_id: std::env::var("GOOGLE_CLIENT_ID")?,
-            google_client_secret: std::env::var("GOOGLE_CLIENT_SECRET")?,
-            google_redirect_url: std::env::var("GOOGLE_REDIRECT_URL")?,
-            jwt_secret: std::env::var("JWT_SECRET")?,
-        },
     };
 
     let app = app(state);

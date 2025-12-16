@@ -4,3 +4,4 @@ include:
   - "compose/minio.yaml"
   - "compose/nats.yaml"
   - "compose/services.yaml"
+  - "compose/app.yaml"

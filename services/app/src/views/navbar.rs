@@ -1,4 +1,5 @@
-use crate::components::{Navbar, NavbarContent, NavbarItem, NavbarNav, NavbarTrigger, Separator};
+use crate::auth::{use_auth, AuthState};
+use crate::components::{Button, Navbar, NavbarContent, NavbarItem, NavbarNav, NavbarTrigger, Separator};
 use crate::Route;
 use dioxus::prelude::*;
 
@@ -15,11 +16,55 @@ fn NavBarSeparator() -> Element {
 }
 
 #[component]
+fn AuthSection() -> Element {
+    let auth = use_auth();
+    let auth_state = auth.state.read();
+
+    match &*auth_state {
+        AuthState::Loading => {
+            rsx! {
+                div { class: "auth-section auth-loading",
+                    span { "..." }
+                }
+            }
+        }
+        AuthState::Unauthenticated => {
+            rsx! {
+                div { class: "auth-section",
+                    Link { to: Route::Login {}, class: "nav-login-link",
+                        span { class: "material-symbols-outlined", "login" }
+                        span { "Sign In" }
+                    }
+                }
+            }
+        }
+        AuthState::Authenticated(user) => {
+            let user_email = user.email.clone();
+            rsx! {
+                div { class: "auth-section auth-user",
+                    span { class: "user-email", "{user_email}" }
+                    Button {
+                        id: "logout-button",
+                        "data-style": "ghost",
+                        onclick: move |_| {
+                            spawn(async move {
+                                auth.logout().await;
+                            });
+                        },
+                        span { class: "material-symbols-outlined", "logout" }
+                    }
+                }
+            }
+        }
+    }
+}
+
+#[component]
 pub fn MainNavBar() -> Element {
     rsx! {
         document::Link { rel: "stylesheet", href: NAVBAR_CSS }
         div { class: "main-nav-bar",
-            Navbar { aria_label: "Main Navbav",
+            Navbar { aria_label: "Main Navbar",
                 NavbarItem {
                     id: "navbar-item",
                     index: 0usize,
@@ -66,7 +111,6 @@ pub fn MainNavBar() -> Element {
                                 span { class: "material-symbols-outlined", "storage" }
                             }
                         }
-
                     }
                 }
                 NavBarSeparator {}
@@ -85,6 +129,10 @@ pub fn MainNavBar() -> Element {
                     to: Route::ToDo {},
                     "ToDo"
                 }
+
+                // Auth section (right side)
+                div { class: "navbar-spacer" }
+                AuthSection {}
             }
             Outlet::<Route> {}
         }

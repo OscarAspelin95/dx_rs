@@ -1,9 +1,16 @@
 use crate::views::MainNavBar;
-use crate::views::{Blog, Home, Results, ToDo, Upload};
+use crate::views::{AuthCallback, Blog, Home, Login, Results, ToDo, Upload};
 use dioxus::prelude::*;
 
 #[derive(Routable, Clone, PartialEq, Debug)]
 pub enum Route {
+    // Auth routes (no navbar layout)
+    #[route("/login")]
+    Login {},
+    #[route("/auth/callback/google?:code")]
+    AuthCallback { code: String },
+
+    // Main app routes (with navbar layout)
     #[layout(MainNavBar)]
     #[route("/")]
     Home {},

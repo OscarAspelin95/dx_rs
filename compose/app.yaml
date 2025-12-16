@@ -1,0 +1,20 @@
+services:
+  app:
+    container_name: dioxus-app
+    ports:
+      - "3000:8080"
+    build:
+      context: ../services
+      dockerfile: app/Dockerfile
+    env_file:
+      - ../.env
+    environment:
+      - PORT=8080
+      - IP=0.0.0.0
+      - ENVIRONMENT=production
+      # Override SurrealDB endpoint for Docker network
+      - SURREALDB_ENDPOINT=ws://db:8000
+    depends_on:
+      - db
+    restart: unless-stopped
+
