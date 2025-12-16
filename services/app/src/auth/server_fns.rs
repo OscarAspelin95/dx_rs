@@ -29,8 +29,8 @@ struct Claims {
 async fn connect_db(max_retries: usize) -> Result<Surreal<Client>, ServerFnError> {
     let mut retries: usize = 0;
 
-    let endpoint = std::env::var("SURREALDB_ENDPOINT_LOCALHOST")
-        .map_err(|_| ServerFnError::new("SURREALDB_ENDPOINT_LOCALHOST not set"))?;
+    let endpoint = std::env::var("SURREALDB_ENDPOINT")
+        .map_err(|_| ServerFnError::new("SURREALDB_ENDPOINT not set"))?;
 
     let db: Surreal<Client> = loop {
         info!("Attempting to connect to SurrealDB at {}...", endpoint);

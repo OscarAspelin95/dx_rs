@@ -65,5 +65,5 @@ ENV PORT=8080
 ENV IP=0.0.0.0
 EXPOSE 8080
 
-# Run the server binary
-ENTRYPOINT ["./server"]
+# Run the app binary (name matches package name in Cargo.toml)
+ENTRYPOINT ["./app"]
